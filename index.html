@@ -80,52 +80,29 @@ canvas{width:100%!important;height:140px!important}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .err{background:var(--red-bg);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:1rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--red2);margin:1rem 0}
 .footer{text-align:center;padding:2rem;font-size:.6rem;color:var(--t3);font-family:'JetBrains Mono',monospace;border-top:1px solid var(--border);margin-top:2rem}
-@media(max-width:900px){.g2{grid-template-columns:1fr}.topbar,.tabs,.panel{padding-left:1rem;padding-right:1rem}.idx-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:600px){.idx-grid{grid-template-columns:1fr}}
+/* Screener styles */
 .scr-filters{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;margin-bottom:1rem}
 .scr-filters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.8rem;margin-top:.8rem}
 .scr-fg{display:flex;flex-direction:column;gap:.25rem}
-.scr-fg label{font-family:"JetBrains Mono",monospace;font-size:.55rem;color:var(--t3);text-transform:uppercase;letter-spacing:.06em}
-.scr-fg select,.scr-fg input{background:var(--bg-3);border:1px solid var(--border);border-radius:5px;padding:.4rem .5rem;color:var(--t1);font-family:"JetBrains Mono",monospace;font-size:.68rem;outline:none}
+.scr-fg label{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--t3);text-transform:uppercase;letter-spacing:.06em}
+.scr-fg select,.scr-fg input{background:var(--bg-3);border:1px solid var(--border);border-radius:5px;padding:.4rem .5rem;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:.68rem;outline:none}
 .scr-fg select:focus,.scr-fg input:focus{border-color:var(--cyn)}
 .scr-actions{display:flex;gap:.6rem;margin-top:.8rem;align-items:center}
-.scr-btn{background:var(--cyn-bg);border:1px solid rgba(6,182,212,.2);color:var(--cyn);font-family:"JetBrains Mono",monospace;font-size:.6rem;padding:.4rem .8rem;border-radius:5px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em}
+.scr-btn{background:var(--cyn-bg);border:1px solid rgba(6,182,212,.2);color:var(--cyn);font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:.4rem .8rem;border-radius:5px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em}
 .scr-btn:hover{background:rgba(6,182,212,.2)}
 .scr-btn.rst{background:var(--red-bg);border-color:rgba(239,68,68,.2);color:var(--red2)}
-.scr-count{font-family:"JetBrains Mono",monospace;font-size:.58rem;color:var(--t3);margin-left:auto}
+.scr-count{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--t3);margin-left:auto}
 .scr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
 .scr-card{background:var(--bg-2);border:1px solid var(--border);border-radius:8px;padding:.7rem .8rem;overflow:hidden;transition:border-color .2s}
 .scr-card:hover{border-color:var(--border-l)}
 .scr-head{display:flex;justify-content:space-between;align-items:baseline}
-.scr-tk{font-family:"JetBrains Mono",monospace;font-size:.78rem;font-weight:700;color:var(--cyn2)}
-.scr-px{font-family:"JetBrains Mono",monospace;font-size:.72rem;font-weight:600;color:var(--t1)}
-.scr-meta{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:.58rem;margin:.2rem 0 .4rem}
+.scr-tk{font-family:'JetBrains Mono',monospace;font-size:.78rem;font-weight:700;color:var(--cyn2)}
+.scr-px{font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:600;color:var(--t1)}
+.scr-meta{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:.56rem;margin:.2rem 0 .4rem;flex-wrap:wrap;gap:.3rem}
 .scr-vol{color:var(--t3)}
 .scr-canvas{width:100%!important;height:160px!important;display:block}
-@media(max-width:900px){.scr-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:600px){.scr-grid{grid-template-columns:1fr}}
-.scr-filters{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;margin-bottom:1rem}
-.scr-filters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.8rem;margin-top:.8rem}
-.scr-fg{display:flex;flex-direction:column;gap:.25rem}
-.scr-fg label{font-family:"JetBrains Mono",monospace;font-size:.55rem;color:var(--t3);text-transform:uppercase;letter-spacing:.06em}
-.scr-fg select,.scr-fg input{background:var(--bg-3);border:1px solid var(--border);border-radius:5px;padding:.4rem .5rem;color:var(--t1);font-family:"JetBrains Mono",monospace;font-size:.68rem;outline:none}
-.scr-fg select:focus,.scr-fg input:focus{border-color:var(--cyn)}
-.scr-actions{display:flex;gap:.6rem;margin-top:.8rem;align-items:center}
-.scr-btn{background:var(--cyn-bg);border:1px solid rgba(6,182,212,.2);color:var(--cyn);font-family:"JetBrains Mono",monospace;font-size:.6rem;padding:.4rem .8rem;border-radius:5px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em}
-.scr-btn:hover{background:rgba(6,182,212,.2)}
-.scr-btn.rst{background:var(--red-bg);border-color:rgba(239,68,68,.2);color:var(--red2)}
-.scr-count{font-family:"JetBrains Mono",monospace;font-size:.58rem;color:var(--t3);margin-left:auto}
-.scr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
-.scr-card{background:var(--bg-2);border:1px solid var(--border);border-radius:8px;padding:.7rem .8rem;overflow:hidden;transition:border-color .2s}
-.scr-card:hover{border-color:var(--border-l)}
-.scr-head{display:flex;justify-content:space-between;align-items:baseline}
-.scr-tk{font-family:"JetBrains Mono",monospace;font-size:.78rem;font-weight:700;color:var(--cyn2)}
-.scr-px{font-family:"JetBrains Mono",monospace;font-size:.72rem;font-weight:600;color:var(--t1)}
-.scr-meta{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:.58rem;margin:.2rem 0 .4rem}
-.scr-vol{color:var(--t3)}
-.scr-canvas{width:100%!important;height:160px!important;display:block}
-@media(max-width:900px){.scr-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:600px){.scr-grid{grid-template-columns:1fr}}
+@media(max-width:900px){.g2{grid-template-columns:1fr}.topbar,.tabs,.panel{padding-left:1rem;padding-right:1rem}.idx-grid{grid-template-columns:1fr 1fr}.scr-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.idx-grid{grid-template-columns:1fr}.scr-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -141,6 +118,8 @@ canvas{width:100%!important;height:140px!important}
   <div class="tab" data-tab="movers">Movers</div>
   <div class="tab" data-tab="screener">Screener</div>
 </div>
+
+<!-- OVERVIEW -->
 <div class="panel active" id="panel-overview">
   <div class="sec"><h2>Index Proxies</h2><div class="line"></div><div class="badge">ETF SNAPSHOT</div></div>
   <div class="idx-grid" id="idxCards"><div class="shimmer"></div><div class="shimmer"></div><div class="shimmer"></div><div class="shimmer"></div></div>
@@ -155,6 +134,8 @@ canvas{width:100%!important;height:140px!important}
     <div class="cc"><h3>QQQ - NASDAQ 100</h3><canvas id="ch-QQQ"></canvas></div>
   </div>
 </div>
+
+<!-- BREADTH -->
 <div class="panel" id="panel-breadth">
   <div class="sec"><h2>Live Breadth</h2><div class="line"></div><div class="badge">FROM SNAPSHOT</div></div>
   <div class="stat-row" id="bStatsFull"><div class="shimmer"></div></div>
@@ -164,6 +145,8 @@ canvas{width:100%!important;height:140px!important}
     <tbody id="seedTbl"></tbody>
   </table></div>
 </div>
+
+<!-- MOVERS -->
 <div class="panel" id="panel-movers">
   <div class="sec"><h2>Top Gainers</h2><div class="line"></div><div class="badge">TODAY</div></div>
   <div class="tw"><table><thead><tr><th>Ticker</th><th>Price</th><th>Change</th><th>% Change</th><th>Volume</th></tr></thead>
@@ -172,6 +155,8 @@ canvas{width:100%!important;height:140px!important}
   <div class="tw"><table><thead><tr><th>Ticker</th><th>Price</th><th>Change</th><th>% Change</th><th>Volume</th></tr></thead>
   <tbody id="loseTbl"><tr><td colspan="5" style="text-align:center;padding:2rem"><div class="shimmer" style="display:inline-block;width:200px;min-height:20px"></div></td></tr></tbody></table></div>
 </div>
+
+<!-- SCREENER -->
 <div class="panel" id="panel-screener">
   <div class="sec"><h2>Stock Screener</h2><div class="line"></div><button class="btn" id="scrFilterToggle">HIDE FILTERS</button></div>
   <div class="scr-filters" id="scrFilterPanel">
@@ -202,3 +187,164 @@ canvas{width:100%!important;height:140px!important}
       </select></div>
     </div>
     <div class="scr-actions">
+      <button class="scr-btn" id="scrApply">APPLY FILTERS</button>
+      <button class="scr-btn rst" id="scrReset">RESET</button>
+      <span class="scr-count" id="scrCount"></span>
+    </div>
+  </div>
+  <div class="scr-grid" id="scrGrid"><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div></div>
+</div>
+
+<div class="footer">Market data powered by Polygon.io · Built by ZeroSumSystems · Not financial advice</div>
+
+<script src="/screener.js"></script>
+<script>
+// Tab switching
+document.querySelectorAll('.tab').forEach(function(t) {
+  t.addEventListener('click', function() {
+    document.querySelectorAll('.tab').forEach(function(x) { x.classList.remove('active'); });
+    document.querySelectorAll('.panel').forEach(function(x) { x.classList.remove('active'); });
+    t.classList.add('active');
+    document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+    // Load screener on first visit
+    if (t.dataset.tab === 'screener' && !SCREENER._loaded) {
+      SCREENER._loaded = true;
+      SCREENER.applyAndLoad();
+    }
+  });
+});
+
+// Clock
+function tick() {
+  var s = new Date().toLocaleString('en-US', {timeZone:'America/New_York', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false});
+  document.getElementById('clock').textContent = s + ' ET';
+}
+setInterval(tick, 1000); tick();
+
+// Helpers
+var fN = function(n, d) { d = d || 2; return n == null ? '--' : Number(n).toLocaleString(undefined, {minimumFractionDigits:d, maximumFractionDigits:d}); };
+var fV = function(v) { if (v >= 1e9) return (v/1e9).toFixed(1)+'B'; if (v >= 1e6) return (v/1e6).toFixed(1)+'M'; if (v >= 1e3) return (v/1e3).toFixed(1)+'K'; return v; };
+
+// INDEX CARDS
+async function loadIdx() {
+  try {
+    var r = await fetch('/api/indices'); var d = await r.json();
+    if (d.error) throw new Error(d.error);
+    document.getElementById('idxCards').innerHTML = d.map(function(t) {
+      var u = t.changePerc >= 0; var p = Math.min(Math.abs(t.changePerc) * 10, 100);
+      return '<div class="idx-card ' + (u?'up':'dn') + '"><div class="idx-lbl">' + t.name + '</div><div class="idx-row"><div class="idx-px">' + fN(t.price) + '</div><div class="idx-chg ' + (u?'up':'dn') + '">' + (u?'+':'') + fN(t.change) + ' (' + (u?'+':'') + fN(t.changePerc) + '%)</div></div><div class="idx-bar"><div class="idx-bar-fill" style="width:' + p + '%;background:' + (u?'var(--grn)':'var(--red)') + '"></div></div><div class="idx-sub">O:' + fN(t.open) + ' H:' + fN(t.high) + ' L:' + fN(t.low) + ' Vol:' + fV(t.volume) + '</div></div>';
+    }).join('');
+  } catch(e) { document.getElementById('idxCards').innerHTML = '<div class="err">' + e.message + '</div>'; }
+}
+
+// BREADTH
+async function loadBreadth() {
+  try {
+    var r = await fetch('/api/breadth'); var d = await r.json();
+    if (d.error) throw new Error(d.error);
+    var bull = d.u4 > d.d4;
+    document.getElementById('bStats').innerHTML =
+      '<div class="sc ' + (bull?'g':'r') + '"><div class="sc-lbl">Up 4%+ Today</div><div class="sc-val g">' + d.u4 + '</div><div class="sc-sub">Strong movers up</div></div>' +
+      '<div class="sc ' + (!bull?'g':'r') + '"><div class="sc-lbl">Down 4%+ Today</div><div class="sc-val r">' + d.d4 + '</div><div class="sc-sub">Strong movers down</div></div>' +
+      '<div class="sc ' + (d.r4>=1?'g':'r') + '"><div class="sc-lbl">4% Ratio</div><div class="sc-val ' + (d.r4>=1.5?'g':d.r4>=1?'y':'r') + '">' + d.r4 + '</div><div class="sc-sub">' + (d.r4>=1.5?'Bullish':d.r4>=1?'Neutral':'Bearish') + '</div></div>' +
+      '<div class="sc c"><div class="sc-lbl">Universe</div><div class="sc-val" style="color:var(--t2)">' + d.universe.toLocaleString() + '</div><div class="sc-sub">Tracked tickers</div></div>';
+    document.getElementById('bStatsFull').innerHTML =
+      '<div class="sc g"><div class="sc-lbl">Up 4%+</div><div class="sc-val g">' + d.u4 + '</div></div>' +
+      '<div class="sc r"><div class="sc-lbl">Down 4%+</div><div class="sc-val r">' + d.d4 + '</div></div>' +
+      '<div class="sc g"><div class="sc-lbl">Up 8%+</div><div class="sc-val g">' + d.u8 + '</div></div>' +
+      '<div class="sc r"><div class="sc-lbl">Down 8%+</div><div class="sc-val r">' + d.d8 + '</div></div>' +
+      '<div class="sc ' + (d.r4>=1?'g':'r') + '"><div class="sc-lbl">4% Ratio</div><div class="sc-val ' + (d.r4>=1.5?'g':d.r4>=1?'y':'r') + '">' + d.r4 + '</div></div>' +
+      '<div class="sc ' + (d.r8>=1?'g':'r') + '"><div class="sc-lbl">8% Ratio</div><div class="sc-val ' + (d.r8>=1.5?'g':d.r8>=1?'y':'r') + '">' + d.r8 + '</div></div>' +
+      '<div class="sc c"><div class="sc-lbl">Advancing</div><div class="sc-val g">' + d.adv + '</div></div>' +
+      '<div class="sc c"><div class="sc-lbl">Declining</div><div class="sc-val r">' + d.dec + '</div></div>';
+    var bk = d.buckets; var tot = d.universe || 1;
+    var co = ['#991b1b','#dc2626','#f87171','#fca5a5','#86efac','#34d399','#10b981','#047857'];
+    var lb = ['-10%+','-5~10','-2~5','0~-2','0~+2','+2~5','+5~10','+10%+'];
+    var vl = [bk.d10,bk.d5,bk.d2,bk.d0,bk.u0,bk.u2,bk.u5,bk.u10];
+    document.getElementById('distBar').innerHTML = '<div class="dist-bar">' + vl.map(function(v,i) {
+      var pc = v/tot*100; return pc > 0 ? '<div style="width:'+pc+'%;background:'+co[i]+'" title="'+lb[i]+': '+v+'">'+(pc>3?v:'')+'</div>' : '';
+    }).join('') + '</div>';
+    document.getElementById('distLeg').innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:.8rem;font-family:JetBrains Mono,monospace;font-size:.56rem;color:var(--t3)">' + vl.map(function(v,i) {
+      return '<span style="display:flex;align-items:center;gap:.3rem"><span style="width:10px;height:10px;border-radius:2px;background:'+co[i]+'"></span>'+lb[i]+': '+v+'</span>';
+    }).join('') + '</div>';
+  } catch(e) {
+    var m = '<div class="err">' + e.message + '</div>';
+    document.getElementById('bStats').innerHTML = m;
+    document.getElementById('bStatsFull').innerHTML = m;
+  }
+}
+
+// MOVERS
+async function loadMovers() {
+  var dirs = [['gainers','gainTbl'],['losers','loseTbl']];
+  for (var k = 0; k < dirs.length; k++) {
+    var dir = dirs[k][0], id = dirs[k][1];
+    try {
+      var r = await fetch('/api/movers?dir=' + dir); var d = await r.json();
+      if (d.error) throw new Error(d.error);
+      document.getElementById(id).innerHTML = d.map(function(t) {
+        var u = t.changePerc >= 0;
+        return '<tr><td>' + t.ticker + '</td><td>' + fN(t.price) + '</td><td class="' + (u?'up-c':'dn-c') + '">' + (u?'+':'') + fN(t.change) + '</td><td class="' + (u?'up-c':'dn-c') + '">' + (u?'+':'') + fN(t.changePerc) + '%</td><td style="color:var(--t2)">' + fV(t.volume) + '</td></tr>';
+      }).join('');
+    } catch(e) { document.getElementById(id).innerHTML = '<tr><td colspan="5"><div class="err">' + e.message + '</div></td></tr>'; }
+  }
+}
+
+// SPARKLINES
+function drawSpark(id, data, color, fill) {
+  var c = document.getElementById(id);
+  if (!c || !data.length) return;
+  var ctx = c.getContext('2d');
+  var dp = window.devicePixelRatio || 1;
+  var r = c.getBoundingClientRect();
+  c.width = r.width * dp; c.height = r.height * dp;
+  ctx.scale(dp, dp);
+  var w = r.width, h = r.height, pd = 10;
+  var mn = Math.min.apply(null, data) * .999, mx = Math.max.apply(null, data) * 1.001, rg = mx - mn || 1;
+  var pts = data.map(function(v, i) { return {x: pd + (i/(data.length-1)) * (w-pd*2), y: h - pd - ((v-mn)/rg) * (h-pd*2)}; });
+  ctx.beginPath(); ctx.moveTo(pts[0].x, h);
+  pts.forEach(function(p) { ctx.lineTo(p.x, p.y); });
+  ctx.lineTo(pts[pts.length-1].x, h); ctx.closePath();
+  var g = ctx.createLinearGradient(0,0,0,h); g.addColorStop(0, fill); g.addColorStop(1, 'transparent');
+  ctx.fillStyle = g; ctx.fill();
+  ctx.beginPath(); pts.forEach(function(p, i) { i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y); });
+  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke();
+  var l = pts[pts.length-1];
+  ctx.beginPath(); ctx.arc(l.x, l.y, 4, 0, Math.PI*2); ctx.fillStyle = color; ctx.fill();
+  ctx.beginPath(); ctx.arc(l.x, l.y, 2, 0, Math.PI*2); ctx.fillStyle = '#111827'; ctx.fill();
+}
+
+async function loadCharts() {
+  var charts = [['SPY','#10b981','rgba(16,185,129,.12)'],['QQQ','#06b6d4','rgba(6,182,212,.12)']];
+  for (var i = 0; i < charts.length; i++) {
+    var tk = charts[i][0], co = charts[i][1], fi = charts[i][2];
+    try {
+      var r = await fetch('/api/aggs?ticker=' + tk); var d = await r.json();
+      var cl = (d.results || []).map(function(x) { return x.close; });
+      (function(t, c, f) { setTimeout(function() { drawSpark('ch-'+t, c, co, fi); }, 80); })(tk, cl, fi);
+    } catch(e) {}
+  }
+}
+
+// SEED DATA
+var SEED=[{d:"1/30/2026",u4:152,d4:458,r5:.57,r10:.94,uQ:1325,dQ:1081,uM:180,dM:98,u5M:35,d5M:23,u13:1359,d13:1603,un:6334},{d:"1/29/2026",u4:211,d4:411,r5:.71,r10:1.10,uQ:1449,dQ:1014,uM:245,dM:84,u5M:52,d5M:25,u13:1493,d13:1355,un:6331},{d:"1/28/2026",u4:174,d4:309,r5:1.14,r10:1.27,uQ:1434,dQ:975,uM:240,dM:80,u5M:59,d5M:20,u13:1547,d13:1275,un:6327},{d:"1/27/2026",u4:253,d4:166,r5:1.77,r10:1.33,uQ:1497,dQ:939,uM:224,dM:77,u5M:48,d5M:21,u13:1659,d13:1168,un:6320},{d:"1/26/2026",u4:159,d4:307,r5:1.32,r10:1.37,uQ:1489,dQ:944,uM:159,dM:78,u5M:35,d5M:20,u13:1649,d13:1178,un:6312},{d:"1/23/2026",u4:178,d4:189,r5:1.51,r10:1.54,uQ:1552,dQ:919,uM:196,dM:60,u5M:43,d5M:17,u13:1731,d13:1081,un:6309},{d:"1/22/2026",u4:438,d4:83,r5:1.61,r10:1.68,uQ:1659,dQ:890,uM:215,dM:61,u5M:44,d5M:22,u13:1897,d13:997,un:6302},{d:"1/21/2026",u4:536,d4:140,r5:1.39,r10:1.55,uQ:1587,dQ:958,uM:222,dM:69,u5M:53,d5M:21,u13:1814,d13:1101,un:6300},{d:"1/20/2026",u4:229,d4:447,r5:1.03,r10:1.50,uQ:1426,dQ:1001,uM:223,dM:74,u5M:61,d5M:21,u13:1571,d13:1183,un:6301},{d:"1/16/2026",u4:232,d4:211,r5:1.43,r10:1.98,uQ:1561,dQ:936,uM:248,dM:65,u5M:78,d5M:20,u13:1778,d13:1065,un:6300},{d:"1/15/2026",u4:288,d4:190,r5:1.57,r10:2.12,uQ:1598,dQ:922,uM:213,dM:60,u5M:55,d5M:18,u13:1802,d13:1016,un:6297},{d:"1/14/2026",u4:308,d4:155,r5:1.76,r10:2.08,uQ:1539,dQ:913,uM:203,dM:61,u5M:58,d5M:18,u13:1763,d13:964,un:6297},{d:"1/13/2026",u4:223,d4:245,r5:1.73,r10:1.97,uQ:1518,dQ:924,uM:155,dM:75,u5M:34,d5M:22,u13:1792,d13:972,un:6294},{d:"1/12/2026",u4:354,d4:180,r5:2.22,r10:1.75,uQ:1514,dQ:924,uM:133,dM:84,u5M:28,d5M:24,u13:1883,d13:934,un:6293},{d:"1/9/2026",u4:296,d4:166,r5:2.65,r10:1.59,uQ:1465,dQ:944,uM:135,dM:101,u5M:27,d5M:26,u13:2063,d13:948,un:6294}];
+function u4C(v){return v>=400?'hsg':v>=250?'hg':''} function d4C(v){return v>=400?'hsr':v>=300?'hr':v>=200?'hy':''}
+function rC(v){return v>=2?'bull':v>=1?'neut':'bear'} function rB(v){return v>=2?'hsg':v>=1.5?'hg':v>=1?'':v>=.7?'hy':'hsr'}
+document.getElementById('seedTbl').innerHTML = SEED.map(function(r) {
+  return '<tr><td>'+r.d+'</td><td class="'+u4C(r.u4)+'">'+r.u4+'</td><td class="'+d4C(r.d4)+'">'+r.d4+'</td><td class="'+rB(r.r5)+'"><span class="br '+rC(r.r5)+'">'+r.r5.toFixed(2)+'</span></td><td class="'+rB(r.r10)+'"><span class="br '+rC(r.r10)+'">'+r.r10.toFixed(2)+'</span></td><td>'+r.uQ.toLocaleString()+'</td><td>'+r.dQ.toLocaleString()+'</td><td>'+r.uM+'</td><td>'+r.dM+'</td><td>'+r.u5M+'</td><td>'+r.d5M+'</td><td>'+r.u13.toLocaleString()+'</td><td>'+r.d13.toLocaleString()+'</td><td style="color:var(--t3)">'+r.un.toLocaleString()+'</td></tr>';
+}).join('');
+
+// INIT
+SCREENER.init();
+
+async function refreshAll() {
+  var b = document.getElementById('refBtn');
+  b.classList.add('ld'); b.textContent = 'LOADING...';
+  await Promise.allSettled([loadIdx(), loadBreadth(), loadMovers(), loadCharts()]);
+  b.classList.remove('ld'); b.textContent = 'REFRESH';
+}
+refreshAll();
+window.addEventListener('resize', loadCharts);
+</script>
+</body>
+</html>
