@@ -8,19 +8,19 @@ async function fetchJSON(url) {
 }
 
 async function getAllQuotes() {
-  const symbols = await fetchJSON(`${BASE}/stable/stock/list?apikey=${API_KEY}`);
+  const symbols = await fetchJSON(`${BASE}/stable/company-symbols-list?apikey=${API_KEY}`);
   if (!Array.isArray(symbols)) return [];
   const usStocks = symbols
     .filter(s => s.exchangeShortName === "NYSE" || s.exchangeShortName === "NASDAQ")
     .map(s => s.symbol);
 
-  const CHUNK = 500;
+  const CHUNK = 100;
   const chunks = [];
   for (let i = 0; i < usStocks.length; i += CHUNK) {
     chunks.push(usStocks.slice(i, i + CHUNK).join(","));
   }
   const results = await Promise.all(chunks.map(c =>
-    fetchJSON(`${BASE}/stable/batch-quote?symbols=${c}&apikey=${API_KEY}`)
+    fetchJSON(`${BASE}/stable/quote?symbol=${c}&apikey=${API_KEY}`)
   ));
   return results.flat().filter(Boolean);
 }
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
     let tickers = allQuotes.filter(q => {
       const price = q.price ?? 0;
       const vol = q.volume ?? 0;
-      const chg = q.changesPercentage ?? 0;
+      const chg = q.changesPercentage ?? (prevClose > 0 ? (q.change??0)/prevClose*100 : 0);
       const open = q.open ?? 0;
       const high = q.dayHigh ?? 0;
       const low = q.dayLow ?? 0;
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
     });
 
     const getPrice = q => q.price ?? 0;
-    const getChg = q => q.changesPercentage ?? 0;
+    const getChg = q => q.changesPercentage ?? ((q.previousClose??0) > 0 ? (q.change??0)/(q.previousClose)*100 : 0);
     const getVol = q => q.volume ?? 0;
     const getGap = q => {
       const pc = q.previousClose ?? 0;
@@ -108,7 +108,7 @@ export default async function handler(req, res) {
         ticker: q.symbol,
         price, open, high, low, volume: vol,
         change: q.change ?? 0,
-        changePerc: q.changesPercentage ?? 0,
+        changePerc: q.changesPercentage ?? ((q.previousClose??0) > 0 ? +((q.change??0)/q.previousClose*100).toFixed(2) : 0),
         prevClose,
         prevVolume: avgVol,
         gap: prevClose > 0 ? +((open - prevClose) / prevClose * 100).toFixed(2) : 0,
