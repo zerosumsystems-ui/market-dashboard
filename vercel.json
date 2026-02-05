@@ -4,10 +4,5 @@
     { "source": "/api/movers", "destination": "/api/movers" },
     { "source": "/api/breadth", "destination": "/api/breadth" },
     { "source": "/api/aggs", "destination": "/api/aggs" }
-  ],
-  "functions": {
-    "api/*.js": {
-      "runtime": "@vercel/node@3"
-    }
-  }
+  ]
 }
