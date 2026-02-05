@@ -1,5 +1,4 @@
 import { getAllQuotes } from './_lib/quotes.js';
-import { kvGet, kvSet, kvEnabled } from './_lib/kv.js';
 
 export default async function handler(req, res) {
   try {
@@ -31,25 +30,12 @@ export default async function handler(req, res) {
     const dateLabel = new Date().toLocaleDateString('en-US', etOpts);
     const isoDate = new Date().toLocaleDateString('en-CA', etOpts);
 
-    const snapshot = {
+    res.json({
       date: isoDate, dateLabel,
       universe: tot, u4, d4, u8, d8,
       r4: d4 > 0 ? +(u4 / d4).toFixed(2) : u4 > 0 ? 99 : 0,
       r8: d8 > 0 ? +(u8 / d8).toFixed(2) : u8 > 0 ? 99 : 0,
       buckets: bk, adv, dec
-    };
-
-    // Store daily snapshot in KV for historical tracking
-    if (kvEnabled() && tot > 50) {
-      try {
-        let history = (await kvGet('breadth_history')) || [];
-        history = history.filter(h => h.date !== isoDate);
-        history.unshift(snapshot);
-        history = history.slice(0, 30);
-        await kvSet('breadth_history', history);
-      } catch {}
-    }
-
-    res.json(snapshot);
+    });
   } catch (e) { res.status(500).json({ error: e.message }); }
 }
