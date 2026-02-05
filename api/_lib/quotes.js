@@ -14,8 +14,9 @@ async function batchQuote(symbols) {
     chunks.push(symbols.slice(i, i + CHUNK).join(","));
   }
   const all = [];
-  for (let i = 0; i < chunks.length; i += 10) {
-    const batch = chunks.slice(i, i + 10);
+  // Run 15 concurrent requests at a time for speed
+  for (let i = 0; i < chunks.length; i += 15) {
+    const batch = chunks.slice(i, i + 15);
     const results = await Promise.allSettled(batch.map(c =>
       fetchJSON(`${BASE}/stable/batch-quote?symbols=${c}&apikey=${API_KEY}`)
     ));
@@ -28,6 +29,8 @@ async function batchQuote(symbols) {
   return all.filter(Boolean);
 }
 
+const US_EXCHANGES = new Set(['NYSE', 'NASDAQ', 'AMEX', 'NYSEArca', 'NYSEAMERICAN', 'NasdaqGS', 'NasdaqGM', 'NasdaqCM']);
+
 export async function getAllQuotes() {
   // Strategy 1: batch-exchange-quote (fastest if available)
   try {
@@ -39,12 +42,42 @@ export async function getAllQuotes() {
       const [nyse, nasdaq] = await Promise.all([nyseRes.json(), nasdaqRes.json()]);
       if (Array.isArray(nyse) && Array.isArray(nasdaq)) {
         const all = [...nyse, ...nasdaq].filter(q => q && q.symbol);
-        if (all.length > 100) return all;
+        if (all.length > 1000) return all;
       }
     }
   } catch {}
 
-  // Strategy 2: S&P 500 + NASDAQ 100 constituents → batch-quote (~600 stocks, ~8 API calls)
+  // Strategy 2: stock-list → filter US stocks → batch-quote (8000+ stocks)
+  try {
+    const list = await fetchJSON(`${BASE}/stable/stock-list?apikey=${API_KEY}`);
+    if (Array.isArray(list) && list.length > 1000) {
+      const usStocks = list.filter(s =>
+        s.symbol &&
+        s.type === 'stock' &&
+        s.exchangeShortName &&
+        US_EXCHANGES.has(s.exchangeShortName)
+      );
+      const symbols = [...new Set(usStocks.map(s => s.symbol))];
+      if (symbols.length > 1000) {
+        return await batchQuote(symbols);
+      }
+    }
+  } catch {}
+
+  // Strategy 3: company-screener with pagination for broad coverage
+  try {
+    const pages = await Promise.all([
+      fetchJSON(`${BASE}/stable/company-screener?exchange=NYSE,NASDAQ,AMEX&isActivelyTrading=true&limit=5000&offset=0&apikey=${API_KEY}`),
+      fetchJSON(`${BASE}/stable/company-screener?exchange=NYSE,NASDAQ,AMEX&isActivelyTrading=true&limit=5000&offset=5000&apikey=${API_KEY}`)
+    ]);
+    const combined = [...(pages[0] || []), ...(pages[1] || [])];
+    if (combined.length > 100) {
+      const symbols = [...new Set(combined.map(s => s.symbol).filter(Boolean))];
+      return await batchQuote(symbols);
+    }
+  } catch {}
+
+  // Strategy 4: S&P 500 + NASDAQ 100 as last resort
   try {
     const [sp500, nasdaq100] = await Promise.all([
       fetchJSON(`${BASE}/stable/sp500-constituent?apikey=${API_KEY}`),
@@ -53,15 +86,6 @@ export async function getAllQuotes() {
     const combined = [...(sp500 || []), ...(nasdaq100 || [])];
     const symbols = [...new Set(combined.map(s => s.symbol).filter(Boolean))];
     if (symbols.length > 50) {
-      return await batchQuote(symbols);
-    }
-  } catch {}
-
-  // Strategy 3: company-screener for broader coverage
-  try {
-    const stocks = await fetchJSON(`${BASE}/stable/company-screener?exchange=NYSE,NASDAQ&isActivelyTrading=true&limit=5000&apikey=${API_KEY}`);
-    if (Array.isArray(stocks) && stocks.length > 50) {
-      const symbols = stocks.map(s => s.symbol).filter(Boolean);
       return await batchQuote(symbols);
     }
   } catch {}
