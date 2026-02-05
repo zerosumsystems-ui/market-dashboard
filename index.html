@@ -82,6 +82,50 @@ canvas{width:100%!important;height:140px!important}
 .footer{text-align:center;padding:2rem;font-size:.6rem;color:var(--t3);font-family:'JetBrains Mono',monospace;border-top:1px solid var(--border);margin-top:2rem}
 @media(max-width:900px){.g2{grid-template-columns:1fr}.topbar,.tabs,.panel{padding-left:1rem;padding-right:1rem}.idx-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.idx-grid{grid-template-columns:1fr}}
+.scr-filters{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;margin-bottom:1rem}
+.scr-filters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.8rem;margin-top:.8rem}
+.scr-fg{display:flex;flex-direction:column;gap:.25rem}
+.scr-fg label{font-family:"JetBrains Mono",monospace;font-size:.55rem;color:var(--t3);text-transform:uppercase;letter-spacing:.06em}
+.scr-fg select,.scr-fg input{background:var(--bg-3);border:1px solid var(--border);border-radius:5px;padding:.4rem .5rem;color:var(--t1);font-family:"JetBrains Mono",monospace;font-size:.68rem;outline:none}
+.scr-fg select:focus,.scr-fg input:focus{border-color:var(--cyn)}
+.scr-actions{display:flex;gap:.6rem;margin-top:.8rem;align-items:center}
+.scr-btn{background:var(--cyn-bg);border:1px solid rgba(6,182,212,.2);color:var(--cyn);font-family:"JetBrains Mono",monospace;font-size:.6rem;padding:.4rem .8rem;border-radius:5px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em}
+.scr-btn:hover{background:rgba(6,182,212,.2)}
+.scr-btn.rst{background:var(--red-bg);border-color:rgba(239,68,68,.2);color:var(--red2)}
+.scr-count{font-family:"JetBrains Mono",monospace;font-size:.58rem;color:var(--t3);margin-left:auto}
+.scr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+.scr-card{background:var(--bg-2);border:1px solid var(--border);border-radius:8px;padding:.7rem .8rem;overflow:hidden;transition:border-color .2s}
+.scr-card:hover{border-color:var(--border-l)}
+.scr-head{display:flex;justify-content:space-between;align-items:baseline}
+.scr-tk{font-family:"JetBrains Mono",monospace;font-size:.78rem;font-weight:700;color:var(--cyn2)}
+.scr-px{font-family:"JetBrains Mono",monospace;font-size:.72rem;font-weight:600;color:var(--t1)}
+.scr-meta{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:.58rem;margin:.2rem 0 .4rem}
+.scr-vol{color:var(--t3)}
+.scr-canvas{width:100%!important;height:160px!important;display:block}
+@media(max-width:900px){.scr-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.scr-grid{grid-template-columns:1fr}}
+.scr-filters{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;margin-bottom:1rem}
+.scr-filters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.8rem;margin-top:.8rem}
+.scr-fg{display:flex;flex-direction:column;gap:.25rem}
+.scr-fg label{font-family:"JetBrains Mono",monospace;font-size:.55rem;color:var(--t3);text-transform:uppercase;letter-spacing:.06em}
+.scr-fg select,.scr-fg input{background:var(--bg-3);border:1px solid var(--border);border-radius:5px;padding:.4rem .5rem;color:var(--t1);font-family:"JetBrains Mono",monospace;font-size:.68rem;outline:none}
+.scr-fg select:focus,.scr-fg input:focus{border-color:var(--cyn)}
+.scr-actions{display:flex;gap:.6rem;margin-top:.8rem;align-items:center}
+.scr-btn{background:var(--cyn-bg);border:1px solid rgba(6,182,212,.2);color:var(--cyn);font-family:"JetBrains Mono",monospace;font-size:.6rem;padding:.4rem .8rem;border-radius:5px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em}
+.scr-btn:hover{background:rgba(6,182,212,.2)}
+.scr-btn.rst{background:var(--red-bg);border-color:rgba(239,68,68,.2);color:var(--red2)}
+.scr-count{font-family:"JetBrains Mono",monospace;font-size:.58rem;color:var(--t3);margin-left:auto}
+.scr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+.scr-card{background:var(--bg-2);border:1px solid var(--border);border-radius:8px;padding:.7rem .8rem;overflow:hidden;transition:border-color .2s}
+.scr-card:hover{border-color:var(--border-l)}
+.scr-head{display:flex;justify-content:space-between;align-items:baseline}
+.scr-tk{font-family:"JetBrains Mono",monospace;font-size:.78rem;font-weight:700;color:var(--cyn2)}
+.scr-px{font-family:"JetBrains Mono",monospace;font-size:.72rem;font-weight:600;color:var(--t1)}
+.scr-meta{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:.58rem;margin:.2rem 0 .4rem}
+.scr-vol{color:var(--t3)}
+.scr-canvas{width:100%!important;height:160px!important;display:block}
+@media(max-width:900px){.scr-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.scr-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -95,6 +139,7 @@ canvas{width:100%!important;height:140px!important}
   <div class="tab active" data-tab="overview">Overview</div>
   <div class="tab" data-tab="breadth">Market Breadth</div>
   <div class="tab" data-tab="movers">Movers</div>
+  <div class="tab" data-tab="screener">Screener</div>
 </div>
 <div class="panel active" id="panel-overview">
   <div class="sec"><h2>Index Proxies</h2><div class="line"></div><div class="badge">ETF SNAPSHOT</div></div>
@@ -127,7 +172,27 @@ canvas{width:100%!important;height:140px!important}
   <div class="tw"><table><thead><tr><th>Ticker</th><th>Price</th><th>Change</th><th>% Change</th><th>Volume</th></tr></thead>
   <tbody id="loseTbl"><tr><td colspan="5" style="text-align:center;padding:2rem"><div class="shimmer" style="display:inline-block;width:200px;min-height:20px"></div></td></tr></tbody></table></div>
 </div>
+<div class="panel" id="panel-screener">
+  <div class="sec"><h2>Stock Screener</h2><div class="line"></div><button class="btn" id="scrFilterToggle">HIDE FILTERS</button></div>
+  <div class="scr-filters" id="scrFilterPanel">
+    <div class="scr-filters-grid">
+      <div class="scr-fg"><label>Min Price</label><input type="number" id="fMinPrice" value="2" placeholder="2"></div>
+      <div class="scr-fg"><label>Max Price</label><input type="number" id="fMaxPrice" value="" placeholder="Any"></div>
+      <div class="scr-fg"><label>Min Volume</label><input type="number" id="fMinVol" value="50000" placeholder="50000"></div>
+      <div class="scr-fg"><label>Min % Change</label><input type="number" id="fMinChg" value="" placeholder="Any" step="0.1"></div>
+      <div class="scr-fg"><label>Max % Change</label><input type="number" id="fMaxChg" value="" placeholder="Any" step="0.1"></div>
+      <div class="scr-fg"><label>Sort By</label><select id="fSort"><option value="changeDesc">% Change (High to Low)</option><option value="changeAsc">% Change (Low to High)</option><option value="volumeDesc">Volume (High to Low)</option></select></div>
+    </div>
+    <div class="scr-actions">
+      <button class="scr-btn" id="scrApply">APPLY FILTERS</button>
+      <button class="scr-btn rst" id="scrReset">RESET</button>
+      <span class="scr-count" id="scrCount"></span>
+    </div>
+  </div>
+  <div class="scr-grid" id="scrGrid"><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div></div>
+</div>
 <div class="footer">Market data powered by Polygon.io / Built by ZeroSumSystems · Not financial advice</div>
+<script src="/screener.js"></script>
 <script>
 document.querySelectorAll('.tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById('panel-'+t.dataset.tab).classList.add('active')})});
 function tick(){const s=new Date().toLocaleString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});document.getElementById('clock').textContent=s+' ET'}
@@ -150,6 +215,7 @@ function u4C(v){return v>=400?'hsg':v>=250?'hg':''}function d4C(v){return v>=400
 document.getElementById('seedTbl').innerHTML=SEED.map(r=>'<tr><td>'+r.d+'</td><td class="'+u4C(r.u4)+'">'+r.u4+'</td><td class="'+d4C(r.d4)+'">'+r.d4+'</td><td class="'+rB(r.r5)+'"><span class="br '+rC(r.r5)+'">'+r.r5.toFixed(2)+'</span></td><td class="'+rB(r.r10)+'"><span class="br '+rC(r.r10)+'">'+r.r10.toFixed(2)+'</span></td><td>'+r.uQ.toLocaleString()+'</td><td>'+r.dQ.toLocaleString()+'</td><td>'+r.uM+'</td><td>'+r.dM+'</td><td>'+r.u5M+'</td><td>'+r.d5M+'</td><td>'+r.u13.toLocaleString()+'</td><td>'+r.d13.toLocaleString()+'</td><td style="color:var(--t3)">'+r.un.toLocaleString()+'</td></tr>').join('');
 
 async function refreshAll(){const b=document.getElementById('refBtn');b.classList.add('ld');b.textContent='LOADING...';await Promise.allSettled([loadIdx(),loadBreadth(),loadMovers(),loadCharts()]);b.classList.remove('ld');b.textContent='REFRESH'}
+SCREENER.init();SCREENER.load();
 refreshAll();window.addEventListener('resize',loadCharts);
 </script>
 </body>
