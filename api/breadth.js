@@ -7,9 +7,9 @@ export default async function handler(req, res) {
     const bk = { d10: 0, d5: 0, d2: 0, d0: 0, u0: 0, u2: 0, u5: 0, u10: 0 };
     let tot = 0, u4 = 0, d4 = 0, u8 = 0, d8 = 0;
     for (const q of tickers) {
-      const prevClose = q.previousClose ?? 0;
       const change = q.change ?? 0;
-      const p = q.changesPercentage ?? (prevClose > 0 ? change / prevClose * 100 : null);
+      const prevClose = q.previousClose ?? (q.price != null && change ? q.price - change : 0);
+      const p = q.changePercentage ?? q.changesPercentage ?? (prevClose > 0 ? change / prevClose * 100 : null);
       if (p == null || !q.volume) continue;
       tot++;
       if (p >= 4) u4++;
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
     };
 
     // Store daily snapshot in KV for historical tracking
-    if (kvEnabled() && tot > 500) {
+    if (kvEnabled() && tot > 50) {
       try {
         let history = (await kvGet('breadth_history')) || [];
         history = history.filter(h => h.date !== isoDate);

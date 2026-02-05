@@ -25,8 +25,9 @@ export default async function handler(req, res) {
     let tickers = allQuotes.filter(q => {
       const price = q.price ?? 0;
       const vol = q.volume ?? 0;
-      const prevClose = q.previousClose ?? 0;
-      const chg = q.changesPercentage ?? (prevClose > 0 ? (q.change ?? 0) / prevClose * 100 : 0);
+      const chgVal = q.change ?? 0;
+      const prevClose = q.previousClose ?? (price && chgVal ? price - chgVal : 0);
+      const chg = q.changePercentage ?? q.changesPercentage ?? (prevClose > 0 ? chgVal / prevClose * 100 : 0);
       const open = q.open ?? 0;
       const high = q.dayHigh ?? 0;
       const low = q.dayLow ?? 0;
@@ -46,7 +47,7 @@ export default async function handler(req, res) {
     });
 
     const getPrice = q => q.price ?? 0;
-    const getChg = q => q.changesPercentage ?? ((q.previousClose ?? 0) > 0 ? (q.change ?? 0) / q.previousClose * 100 : 0);
+    const getChg = q => q.changePercentage ?? q.changesPercentage ?? ((q.previousClose ?? 0) > 0 ? (q.change ?? 0) / q.previousClose * 100 : 0);
     const getVol = q => q.volume ?? 0;
     const getGap = q => {
       const pc = q.previousClose ?? 0;
@@ -72,7 +73,7 @@ export default async function handler(req, res) {
     else if (sort === "relVolDesc") tickers.sort((a, b) => getRelVol(b) - getRelVol(a));
 
     const selected = tickers.slice(0, limit).map(q => {
-      const prevClose = q.previousClose ?? 0;
+      const prevClose = q.previousClose ?? (price && (q.change ?? 0) ? price - q.change : 0);
       const open = q.open ?? 0;
       const price = q.price ?? 0;
       const high = q.dayHigh ?? 0;
@@ -83,7 +84,7 @@ export default async function handler(req, res) {
         ticker: q.symbol,
         price, open, high, low, volume: vol,
         change: q.change ?? 0,
-        changePerc: q.changesPercentage ?? ((q.previousClose ?? 0) > 0 ? +((q.change ?? 0) / q.previousClose * 100).toFixed(2) : 0),
+        changePerc: q.changePercentage ?? q.changesPercentage ?? ((q.previousClose ?? 0) > 0 ? +((q.change ?? 0) / q.previousClose * 100).toFixed(2) : 0),
         prevClose,
         prevVolume: avgVol,
         gap: prevClose > 0 ? +((open - prevClose) / prevClose * 100).toFixed(2) : 0,

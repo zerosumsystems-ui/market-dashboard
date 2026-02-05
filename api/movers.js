@@ -18,7 +18,7 @@ export default async function handler(req, res) {
           ticker: q.symbol,
           price: q.price ?? 0,
           change: q.change ?? 0,
-          changePerc: q.changesPercentage ?? (prevClose > 0 ? +((q.change??0)/prevClose*100).toFixed(2) : 0),
+          changePerc: q.changePercentage ?? q.changesPercentage ?? (prevClose > 0 ? +((q.change??0)/prevClose*100).toFixed(2) : 0),
           volume: q.volume ?? 0
         };
       });
