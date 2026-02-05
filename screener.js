@@ -32,7 +32,7 @@ const SCREENER = {
       minOpen: this.getVal('fMinOpen', 0),
       maxOpen: this.getVal('fMaxOpen', 999999),
       sort: document.getElementById('fSort').value,
-      limit: 21
+      limit: 9
     };
     this.load();
   },
