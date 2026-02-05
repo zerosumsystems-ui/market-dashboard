@@ -176,47 +176,29 @@ canvas{width:100%!important;height:140px!important}
   <div class="sec"><h2>Stock Screener</h2><div class="line"></div><button class="btn" id="scrFilterToggle">HIDE FILTERS</button></div>
   <div class="scr-filters" id="scrFilterPanel">
     <div class="scr-filters-grid">
-      <div class="scr-fg"><label>Min Price</label><input type="number" id="fMinPrice" value="2" placeholder="2"></div>
-      <div class="scr-fg"><label>Max Price</label><input type="number" id="fMaxPrice" value="" placeholder="Any"></div>
+      <div class="scr-fg"><label>Min Price ($)</label><input type="number" id="fMinPrice" value="2" placeholder="2"></div>
+      <div class="scr-fg"><label>Max Price ($)</label><input type="number" id="fMaxPrice" value="" placeholder="Any"></div>
       <div class="scr-fg"><label>Min Volume</label><input type="number" id="fMinVol" value="50000" placeholder="50000"></div>
+      <div class="scr-fg"><label>Max Volume</label><input type="number" id="fMaxVol" value="" placeholder="Any"></div>
       <div class="scr-fg"><label>Min % Change</label><input type="number" id="fMinChg" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Max % Change</label><input type="number" id="fMaxChg" value="" placeholder="Any" step="0.1"></div>
-      <div class="scr-fg"><label>Sort By</label><select id="fSort"><option value="changeDesc">% Change (High to Low)</option><option value="changeAsc">% Change (Low to High)</option><option value="volumeDesc">Volume (High to Low)</option></select></div>
+      <div class="scr-fg"><label>Min Gap %</label><input type="number" id="fMinGap" value="" placeholder="Any" step="0.1"></div>
+      <div class="scr-fg"><label>Max Gap %</label><input type="number" id="fMaxGap" value="" placeholder="Any" step="0.1"></div>
+      <div class="scr-fg"><label>Min Range %</label><input type="number" id="fMinRange" value="" placeholder="Any" step="0.1"></div>
+      <div class="scr-fg"><label>Max Range %</label><input type="number" id="fMaxRange" value="" placeholder="Any" step="0.1"></div>
+      <div class="scr-fg"><label>Min Rel Volume (x)</label><input type="number" id="fMinRelVol" value="" placeholder="Any" step="0.1"></div>
+      <div class="scr-fg"><label>Min Open ($)</label><input type="number" id="fMinOpen" value="" placeholder="Any"></div>
+      <div class="scr-fg"><label>Max Open ($)</label><input type="number" id="fMaxOpen" value="" placeholder="Any"></div>
+      <div class="scr-fg"><label>Sort By</label><select id="fSort">
+        <option value="changeDesc">% Change (High-Low)</option>
+        <option value="changeAsc">% Change (Low-High)</option>
+        <option value="volumeDesc">Volume (High-Low)</option>
+        <option value="volumeAsc">Volume (Low-High)</option>
+        <option value="priceDesc">Price (High-Low)</option>
+        <option value="priceAsc">Price (Low-High)</option>
+        <option value="gapDesc">Gap % (High-Low)</option>
+        <option value="rangeDesc">Range % (High-Low)</option>
+        <option value="relVolDesc">Rel Volume (High-Low)</option>
+      </select></div>
     </div>
     <div class="scr-actions">
-      <button class="scr-btn" id="scrApply">APPLY FILTERS</button>
-      <button class="scr-btn rst" id="scrReset">RESET</button>
-      <span class="scr-count" id="scrCount"></span>
-    </div>
-  </div>
-  <div class="scr-grid" id="scrGrid"><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div></div>
-</div>
-<div class="footer">Market data powered by Polygon.io / Built by ZeroSumSystems · Not financial advice</div>
-<script src="/screener.js"></script>
-<script>
-document.querySelectorAll('.tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById('panel-'+t.dataset.tab).classList.add('active')})});
-function tick(){const s=new Date().toLocaleString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});document.getElementById('clock').textContent=s+' ET'}
-setInterval(tick,1000);tick();
-const fN=(n,d=2)=>n==null?'--':Number(n).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
-const fV=v=>{if(v>=1e9)return(v/1e9).toFixed(1)+'B';if(v>=1e6)return(v/1e6).toFixed(1)+'M';if(v>=1e3)return(v/1e3).toFixed(1)+'K';return v};
-
-async function loadIdx(){try{const r=await fetch('/api/indices');const d=await r.json();if(d.error)throw new Error(d.error);document.getElementById('idxCards').innerHTML=d.map(t=>{const u=t.changePerc>=0;const p=Math.min(Math.abs(t.changePerc)*10,100);return'<div class="idx-card '+(u?'up':'dn')+'"><div class="idx-lbl">'+t.name+'</div><div class="idx-row"><div class="idx-px">'+fN(t.price)+'</div><div class="idx-chg '+(u?'up':'dn')+'">'+(u?'+':'')+fN(t.change)+' ('+(u?'+':'')+fN(t.changePerc)+'%)</div></div><div class="idx-bar"><div class="idx-bar-fill" style="width:'+p+'%;background:'+(u?'var(--grn)':'var(--red)')+'"></div></div><div class="idx-sub">O:'+fN(t.open)+' H:'+fN(t.high)+' L:'+fN(t.low)+' Vol:'+fV(t.volume)+'</div></div>'}).join('')}catch(e){document.getElementById('idxCards').innerHTML='<div class="err">'+e.message+'</div>'}}
-
-async function loadBreadth(){try{const r=await fetch('/api/breadth');const d=await r.json();if(d.error)throw new Error(d.error);const bull=d.u4>d.d4;document.getElementById('bStats').innerHTML='<div class="sc '+(bull?'g':'r')+'"><div class="sc-lbl">Up 4%+ Today</div><div class="sc-val g">'+d.u4+'</div><div class="sc-sub">Strong movers up</div></div><div class="sc '+(!bull?'g':'r')+'"><div class="sc-lbl">Down 4%+ Today</div><div class="sc-val r">'+d.d4+'</div><div class="sc-sub">Strong movers down</div></div><div class="sc '+(d.r4>=1?'g':'r')+'"><div class="sc-lbl">4% Ratio</div><div class="sc-val '+(d.r4>=1.5?'g':d.r4>=1?'y':'r')+'">'+d.r4+'</div><div class="sc-sub">'+(d.r4>=1.5?'Bullish':d.r4>=1?'Neutral':'Bearish')+'</div></div><div class="sc c"><div class="sc-lbl">Universe</div><div class="sc-val" style="color:var(--t2)">'+d.universe.toLocaleString()+'</div><div class="sc-sub">Tracked tickers</div></div>';document.getElementById('bStatsFull').innerHTML='<div class="sc g"><div class="sc-lbl">Up 4%+</div><div class="sc-val g">'+d.u4+'</div></div><div class="sc r"><div class="sc-lbl">Down 4%+</div><div class="sc-val r">'+d.d4+'</div></div><div class="sc g"><div class="sc-lbl">Up 8%+</div><div class="sc-val g">'+d.u8+'</div></div><div class="sc r"><div class="sc-lbl">Down 8%+</div><div class="sc-val r">'+d.d8+'</div></div><div class="sc '+(d.r4>=1?'g':'r')+'"><div class="sc-lbl">4% Ratio</div><div class="sc-val '+(d.r4>=1.5?'g':d.r4>=1?'y':'r')+'">'+d.r4+'</div></div><div class="sc '+(d.r8>=1?'g':'r')+'"><div class="sc-lbl">8% Ratio</div><div class="sc-val '+(d.r8>=1.5?'g':d.r8>=1?'y':'r')+'">'+d.r8+'</div></div><div class="sc c"><div class="sc-lbl">Advancing</div><div class="sc-val g">'+d.adv+'</div></div><div class="sc c"><div class="sc-lbl">Declining</div><div class="sc-val r">'+d.dec+'</div></div>';const bk=d.buckets;const tot=d.universe||1;const co=['#991b1b','#dc2626','#f87171','#fca5a5','#86efac','#34d399','#10b981','#047857'];const lb=['-10%+','-5~10','-2~5','0~-2','0~+2','+2~5','+5~10','+10%+'];const vl=[bk.d10,bk.d5,bk.d2,bk.d0,bk.u0,bk.u2,bk.u5,bk.u10];document.getElementById('distBar').innerHTML='<div class="dist-bar">'+vl.map((v,i)=>{const pc=v/tot*100;return pc>0?'<div style="width:'+pc+'%;background:'+co[i]+'" title="'+lb[i]+': '+v+'">'+(pc>3?v:'')+'</div>':''}).join('')+'</div>';document.getElementById('distLeg').innerHTML='<div style="display:flex;flex-wrap:wrap;gap:.8rem;font-family:JetBrains Mono,monospace;font-size:.56rem;color:var(--t3)">'+vl.map((v,i)=>'<span style="display:flex;align-items:center;gap:.3rem"><span style="width:10px;height:10px;border-radius:2px;background:'+co[i]+'"></span>'+lb[i]+': '+v+'</span>').join('')+'</div>'}catch(e){const m='<div class="err">'+e.message+'</div>';document.getElementById('bStats').innerHTML=m;document.getElementById('bStatsFull').innerHTML=m}}
-
-async function loadMovers(){for(const[dir,id]of[['gainers','gainTbl'],['losers','loseTbl']]){try{const r=await fetch('/api/movers?dir='+dir);const d=await r.json();if(d.error)throw new Error(d.error);document.getElementById(id).innerHTML=d.map(t=>{const u=t.changePerc>=0;return'<tr><td>'+t.ticker+'</td><td>'+fN(t.price)+'</td><td class="'+(u?'up-c':'dn-c')+'">'+(u?'+':'')+fN(t.change)+'</td><td class="'+(u?'up-c':'dn-c')+'">'+(u?'+':'')+fN(t.changePerc)+'%</td><td style="color:var(--t2)">'+fV(t.volume)+'</td></tr>'}).join('')}catch(e){document.getElementById(id).innerHTML='<tr><td colspan="5"><div class="err">'+e.message+'</div></td></tr>'}}}
-
-function drawSpark(id,data,color,fill){const c=document.getElementById(id);if(!c||!data.length)return;const ctx=c.getContext('2d');const dp=window.devicePixelRatio||1;const r=c.getBoundingClientRect();c.width=r.width*dp;c.height=r.height*dp;ctx.scale(dp,dp);const w=r.width,h=r.height,pd=10;const mn=Math.min(...data)*.999,mx=Math.max(...data)*1.001,rg=mx-mn||1;const pts=data.map((v,i)=>({x:pd+(i/(data.length-1))*(w-pd*2),y:h-pd-((v-mn)/rg)*(h-pd*2)}));ctx.beginPath();ctx.moveTo(pts[0].x,h);pts.forEach(p=>ctx.lineTo(p.x,p.y));ctx.lineTo(pts[pts.length-1].x,h);ctx.closePath();const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,fill);g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.fill();ctx.beginPath();pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.strokeStyle=color;ctx.lineWidth=2;ctx.lineJoin='round';ctx.stroke();const l=pts[pts.length-1];ctx.beginPath();ctx.arc(l.x,l.y,4,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.beginPath();ctx.arc(l.x,l.y,2,0,Math.PI*2);ctx.fillStyle='#111827';ctx.fill()}
-
-async function loadCharts(){for(const[tk,co,fi]of[['SPY','#10b981','rgba(16,185,129,.12)'],['QQQ','#06b6d4','rgba(6,182,212,.12)']]){try{const r=await fetch('/api/aggs?ticker='+tk);const d=await r.json();const cl=(d.results||[]).map(x=>x.close);setTimeout(()=>drawSpark('ch-'+tk,cl,co,fi),80)}catch(e){}}}
-
-const SEED=[{d:"1/30/2026",u4:152,d4:458,r5:.57,r10:.94,uQ:1325,dQ:1081,uM:180,dM:98,u5M:35,d5M:23,u13:1359,d13:1603,un:6334},{d:"1/29/2026",u4:211,d4:411,r5:.71,r10:1.10,uQ:1449,dQ:1014,uM:245,dM:84,u5M:52,d5M:25,u13:1493,d13:1355,un:6331},{d:"1/28/2026",u4:174,d4:309,r5:1.14,r10:1.27,uQ:1434,dQ:975,uM:240,dM:80,u5M:59,d5M:20,u13:1547,d13:1275,un:6327},{d:"1/27/2026",u4:253,d4:166,r5:1.77,r10:1.33,uQ:1497,dQ:939,uM:224,dM:77,u5M:48,d5M:21,u13:1659,d13:1168,un:6320},{d:"1/26/2026",u4:159,d4:307,r5:1.32,r10:1.37,uQ:1489,dQ:944,uM:159,dM:78,u5M:35,d5M:20,u13:1649,d13:1178,un:6312},{d:"1/23/2026",u4:178,d4:189,r5:1.51,r10:1.54,uQ:1552,dQ:919,uM:196,dM:60,u5M:43,d5M:17,u13:1731,d13:1081,un:6309},{d:"1/22/2026",u4:438,d4:83,r5:1.61,r10:1.68,uQ:1659,dQ:890,uM:215,dM:61,u5M:44,d5M:22,u13:1897,d13:997,un:6302},{d:"1/21/2026",u4:536,d4:140,r5:1.39,r10:1.55,uQ:1587,dQ:958,uM:222,dM:69,u5M:53,d5M:21,u13:1814,d13:1101,un:6300},{d:"1/20/2026",u4:229,d4:447,r5:1.03,r10:1.50,uQ:1426,dQ:1001,uM:223,dM:74,u5M:61,d5M:21,u13:1571,d13:1183,un:6301},{d:"1/16/2026",u4:232,d4:211,r5:1.43,r10:1.98,uQ:1561,dQ:936,uM:248,dM:65,u5M:78,d5M:20,u13:1778,d13:1065,un:6300},{d:"1/15/2026",u4:288,d4:190,r5:1.57,r10:2.12,uQ:1598,dQ:922,uM:213,dM:60,u5M:55,d5M:18,u13:1802,d13:1016,un:6297},{d:"1/14/2026",u4:308,d4:155,r5:1.76,r10:2.08,uQ:1539,dQ:913,uM:203,dM:61,u5M:58,d5M:18,u13:1763,d13:964,un:6297},{d:"1/13/2026",u4:223,d4:245,r5:1.73,r10:1.97,uQ:1518,dQ:924,uM:155,dM:75,u5M:34,d5M:22,u13:1792,d13:972,un:6294},{d:"1/12/2026",u4:354,d4:180,r5:2.22,r10:1.75,uQ:1514,dQ:924,uM:133,dM:84,u5M:28,d5M:24,u13:1883,d13:934,un:6293},{d:"1/9/2026",u4:296,d4:166,r5:2.65,r10:1.59,uQ:1465,dQ:944,uM:135,dM:101,u5M:27,d5M:26,u13:2063,d13:948,un:6294}];
-function u4C(v){return v>=400?'hsg':v>=250?'hg':''}function d4C(v){return v>=400?'hsr':v>=300?'hr':v>=200?'hy':''}function rC(v){return v>=2?'bull':v>=1?'neut':'bear'}function rB(v){return v>=2?'hsg':v>=1.5?'hg':v>=1?'':v>=.7?'hy':'hsr'}
-document.getElementById('seedTbl').innerHTML=SEED.map(r=>'<tr><td>'+r.d+'</td><td class="'+u4C(r.u4)+'">'+r.u4+'</td><td class="'+d4C(r.d4)+'">'+r.d4+'</td><td class="'+rB(r.r5)+'"><span class="br '+rC(r.r5)+'">'+r.r5.toFixed(2)+'</span></td><td class="'+rB(r.r10)+'"><span class="br '+rC(r.r10)+'">'+r.r10.toFixed(2)+'</span></td><td>'+r.uQ.toLocaleString()+'</td><td>'+r.dQ.toLocaleString()+'</td><td>'+r.uM+'</td><td>'+r.dM+'</td><td>'+r.u5M+'</td><td>'+r.d5M+'</td><td>'+r.u13.toLocaleString()+'</td><td>'+r.d13.toLocaleString()+'</td><td style="color:var(--t3)">'+r.un.toLocaleString()+'</td></tr>').join('');
-
-async function refreshAll(){const b=document.getElementById('refBtn');b.classList.add('ld');b.textContent='LOADING...';await Promise.allSettled([loadIdx(),loadBreadth(),loadMovers(),loadCharts()]);b.classList.remove('ld');b.textContent='REFRESH'}
-SCREENER.init();SCREENER.load();
-refreshAll();window.addEventListener('resize',loadCharts);
-</script>
-</body>
-</html>
