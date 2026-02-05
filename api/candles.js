@@ -1,6 +1,12 @@
 const API_KEY = process.env.FMP_API_KEY;
 const BASE = "https://financialmodelingprep.com";
 
+function parseHist(data) {
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.historical)) return data.historical;
+  return [];
+}
+
 export default async function handler(req, res) {
   try {
     const tickers = (req.query.tickers || "SPY").split(",").slice(0, 21);
@@ -13,7 +19,7 @@ export default async function handler(req, res) {
       try {
         const r = await fetch(`${BASE}/stable/historical-price-eod?symbol=${tk}&from=${from}&to=${to}&apikey=${API_KEY}`);
         const d = await r.json();
-        const hist = (d.historical || []).slice().reverse();
+        const hist = parseHist(d).slice().reverse();
         return {
           ticker: tk,
           candles: hist.slice(-days).map(h => ({
