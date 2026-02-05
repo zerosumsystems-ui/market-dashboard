@@ -1,14 +1,18 @@
-const API_KEY = process.env.POLYGON_API_KEY;
+const API_KEY = process.env.FMP_API_KEY;
+const BASE = "https://financialmodelingprep.com";
 
 export default async function handler(req, res) {
   try {
-    const r = await fetch(`https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers?apiKey=${API_KEY}`);
-    const data = await r.json();
-    const tickers = data.tickers||[];
+    const [rNYSE, rNASDAQ] = await Promise.all([
+      fetch(`${BASE}/stable/full-exchange-quotes?exchange=NYSE&apikey=${API_KEY}`),
+      fetch(`${BASE}/stable/full-exchange-quotes?exchange=NASDAQ&apikey=${API_KEY}`)
+    ]);
+    const [dNYSE, dNASDAQ] = await Promise.all([rNYSE.json(), rNASDAQ.json()]);
+    const tickers = [...(dNYSE||[]), ...(dNASDAQ||[])];
     const bk={d10:0,d5:0,d2:0,d0:0,u0:0,u2:0,u5:0,u10:0};
     let tot=0,u4=0,d4=0,u8=0,d8=0;
-    for(const t of tickers){
-      const p=t.todaysChangePerc; if(p==null||!t.day?.v) continue; tot++;
+    for(const q of tickers){
+      const p=q.changesPercentage; if(p==null||!q.volume) continue; tot++;
       if(p>=4)u4++; if(p<=-4)d4++; if(p>=8)u8++; if(p<=-8)d8++;
       if(p<=-10)bk.d10++; else if(p<=-5)bk.d5++; else if(p<=-2)bk.d2++;
       else if(p<0)bk.d0++; else if(p<2)bk.u0++; else if(p<5)bk.u2++;
