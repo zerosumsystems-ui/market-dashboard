@@ -113,7 +113,7 @@ canvas{width:100%!important;height:140px!important}
 <div class="panel" id="panel-breadth">
   <div class="sec"><h2>Live Breadth</h2><div class="line"></div><div class="badge">FROM SNAPSHOT</div></div>
   <div class="stat-row" id="bStatsFull"><div class="shimmer"></div></div>
-  <div class="sec"><h2>Historical Breadth (Stockbee Data)</h2><div class="line"></div></div>
+  <div class="sec"><h2>Historical Breadth (ZeroSumSystems)</h2><div class="line"></div></div>
   <div class="tw"><table>
     <thead><tr><th>Date</th><th>Up 4%+</th><th>Dn 4%+</th><th>5d Ratio</th><th>10d Ratio</th><th>Up25%Q</th><th>Dn25%Q</th><th>Up25%M</th><th>Dn25%M</th><th>Up50%M</th><th>Dn50%M</th><th>Up13%34d</th><th>Dn13%34d</th><th>Univ</th></tr></thead>
     <tbody id="seedTbl"></tbody>
@@ -127,7 +127,7 @@ canvas{width:100%!important;height:140px!important}
   <div class="tw"><table><thead><tr><th>Ticker</th><th>Price</th><th>Change</th><th>% Change</th><th>Volume</th></tr></thead>
   <tbody id="loseTbl"><tr><td colspan="5" style="text-align:center;padding:2rem"><div class="shimmer" style="display:inline-block;width:200px;min-height:20px"></div></td></tr></tbody></table></div>
 </div>
-<div class="footer">Market data powered by Polygon.io / Breadth inspired by Stockbee Market Monitor / Not financial advice</div>
+<div class="footer">Market data powered by Polygon.io / Built by ZeroSumSystems · Not financial advice</div>
 <script>
 document.querySelectorAll('.tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById('panel-'+t.dataset.tab).classList.add('active')})});
 function tick(){const s=new Date().toLocaleString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});document.getElementById('clock').textContent=s+' ET'}
