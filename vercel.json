@@ -1,8 +1,3 @@
 {
-  "rewrites": [
-    { "source": "/api/indices", "destination": "/api/indices" },
-    { "source": "/api/movers", "destination": "/api/movers" },
-    { "source": "/api/breadth", "destination": "/api/breadth" },
-    { "source": "/api/aggs", "destination": "/api/aggs" }
-  ]
+  "outputDirectory": "public"
 }
