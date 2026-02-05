@@ -1,14 +1,39 @@
-const API_KEY = process.env.POLYGON_API_KEY;
+const API_KEY = process.env.FMP_API_KEY;
+const BASE = "https://financialmodelingprep.com";
+
+async function fetchJSON(url) {
+  const r = await fetch(url);
+  const text = await r.text();
+  try { return JSON.parse(text); } catch { return null; }
+}
+
+async function getAllQuotes() {
+  // Get all tradable US stock symbols
+  const symbols = await fetchJSON(`${BASE}/stable/stock/list?apikey=${API_KEY}`);
+  if (!Array.isArray(symbols)) return [];
+  const usStocks = symbols
+    .filter(s => s.exchangeShortName === "NYSE" || s.exchangeShortName === "NASDAQ")
+    .map(s => s.symbol);
+
+  // Batch-quote in chunks
+  const CHUNK = 500;
+  const chunks = [];
+  for (let i = 0; i < usStocks.length; i += CHUNK) {
+    chunks.push(usStocks.slice(i, i + CHUNK).join(","));
+  }
+  const results = await Promise.all(chunks.map(c =>
+    fetchJSON(`${BASE}/stable/batch-quote?symbols=${c}&apikey=${API_KEY}`)
+  ));
+  return results.flat().filter(Boolean);
+}
 
 export default async function handler(req, res) {
   try {
-    const r = await fetch(`https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers?apiKey=${API_KEY}`);
-    const data = await r.json();
-    const tickers = data.tickers||[];
+    const tickers = await getAllQuotes();
     const bk={d10:0,d5:0,d2:0,d0:0,u0:0,u2:0,u5:0,u10:0};
     let tot=0,u4=0,d4=0,u8=0,d8=0;
-    for(const t of tickers){
-      const p=t.todaysChangePerc; if(p==null||!t.day?.v) continue; tot++;
+    for(const q of tickers){
+      const p=q.changesPercentage; if(p==null||!q.volume) continue; tot++;
       if(p>=4)u4++; if(p<=-4)d4++; if(p>=8)u8++; if(p<=-8)d8++;
       if(p<=-10)bk.d10++; else if(p<=-5)bk.d5++; else if(p<=-2)bk.d2++;
       else if(p<0)bk.d0++; else if(p<2)bk.u0++; else if(p<5)bk.u2++;

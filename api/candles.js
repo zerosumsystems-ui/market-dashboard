@@ -1,4 +1,5 @@
-const API_KEY = process.env.POLYGON_API_KEY;
+const API_KEY = process.env.FMP_API_KEY;
+const BASE = "https://financialmodelingprep.com";
 
 export default async function handler(req, res) {
   try {
@@ -10,12 +11,13 @@ export default async function handler(req, res) {
 
     const results = await Promise.all(tickers.map(async tk => {
       try {
-        const r = await fetch(`https://api.polygon.io/v2/aggs/ticker/${tk}/range/1/day/${from}/${to}?adjusted=true&sort=asc&limit=5000&apiKey=${API_KEY}`);
+        const r = await fetch(`${BASE}/stable/historical-price-eod?symbol=${tk}&from=${from}&to=${to}&apikey=${API_KEY}`);
         const d = await r.json();
+        const hist = (d.historical || []).slice().reverse();
         return {
           ticker: tk,
-          candles: (d.results || []).slice(-days).map(c => ({
-            t: c.t, o: c.o, h: c.h, l: c.l, c: c.c, v: c.v
+          candles: hist.slice(-days).map(h => ({
+            t: new Date(h.date).getTime(), o: h.open, h: h.high, l: h.low, c: h.close, v: h.volume
           }))
         };
       } catch (e) { return { ticker: tk, candles: [] }; }
