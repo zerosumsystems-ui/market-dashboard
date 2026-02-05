@@ -50,11 +50,11 @@ export default async function handler(req, res) {
     let tickers = allQuotes.filter(q => {
       const price = q.price ?? 0;
       const vol = q.volume ?? 0;
+      const prevClose = q.previousClose ?? 0;
       const chg = q.changesPercentage ?? (prevClose > 0 ? (q.change??0)/prevClose*100 : 0);
       const open = q.open ?? 0;
       const high = q.dayHigh ?? 0;
       const low = q.dayLow ?? 0;
-      const prevClose = q.previousClose ?? 0;
       const range = price > 0 ? ((high - low) / price) * 100 : 0;
       const gap = prevClose > 0 ? ((open - prevClose) / prevClose) * 100 : 0;
       const avgVol = q.avgVolume ?? 0;
