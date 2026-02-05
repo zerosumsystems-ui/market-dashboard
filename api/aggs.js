@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     const ago = new Date(); ago.setDate(ago.getDate()-50);
     const from = ago.toISOString().slice(0,10);
     const to = new Date().toISOString().slice(0,10);
-    const r = await fetch(`${BASE}/stable/historical-price-eod/full?symbol=${tk}&from=${from}&to=${to}&apikey=${API_KEY}`);
+    const r = await fetch(`${BASE}/stable/historical-price-eod?symbol=${tk}&from=${from}&to=${to}&apikey=${API_KEY}`);
     const data = await r.json();
     const hist = (data.historical||[]).slice().reverse();
     res.json({ticker:tk, results:hist.map(h=>({date:h.date, close:h.close}))});

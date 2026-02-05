@@ -1,14 +1,35 @@
 const API_KEY = process.env.FMP_API_KEY;
 const BASE = "https://financialmodelingprep.com";
 
+async function fetchJSON(url) {
+  const r = await fetch(url);
+  const text = await r.text();
+  try { return JSON.parse(text); } catch { return null; }
+}
+
+async function getAllQuotes() {
+  // Get all tradable US stock symbols
+  const symbols = await fetchJSON(`${BASE}/stable/stock/list?apikey=${API_KEY}`);
+  if (!Array.isArray(symbols)) return [];
+  const usStocks = symbols
+    .filter(s => s.exchangeShortName === "NYSE" || s.exchangeShortName === "NASDAQ")
+    .map(s => s.symbol);
+
+  // Batch-quote in chunks
+  const CHUNK = 500;
+  const chunks = [];
+  for (let i = 0; i < usStocks.length; i += CHUNK) {
+    chunks.push(usStocks.slice(i, i + CHUNK).join(","));
+  }
+  const results = await Promise.all(chunks.map(c =>
+    fetchJSON(`${BASE}/stable/batch-quote?symbols=${c}&apikey=${API_KEY}`)
+  ));
+  return results.flat().filter(Boolean);
+}
+
 export default async function handler(req, res) {
   try {
-    const [rNYSE, rNASDAQ] = await Promise.all([
-      fetch(`${BASE}/stable/batch-exchange-quote?exchange=NYSE&apikey=${API_KEY}`),
-      fetch(`${BASE}/stable/batch-exchange-quote?exchange=NASDAQ&apikey=${API_KEY}`)
-    ]);
-    const [dNYSE, dNASDAQ] = await Promise.all([rNYSE.json(), rNASDAQ.json()]);
-    const tickers = [...(dNYSE||[]), ...(dNASDAQ||[])];
+    const tickers = await getAllQuotes();
     const bk={d10:0,d5:0,d2:0,d0:0,u0:0,u2:0,u5:0,u10:0};
     let tot=0,u4=0,d4=0,u8=0,d8=0;
     for(const q of tickers){

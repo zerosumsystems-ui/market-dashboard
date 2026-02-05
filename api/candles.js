@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
     const results = await Promise.all(tickers.map(async tk => {
       try {
-        const r = await fetch(`${BASE}/stable/historical-price-eod/full?symbol=${tk}&from=${from}&to=${to}&apikey=${API_KEY}`);
+        const r = await fetch(`${BASE}/stable/historical-price-eod?symbol=${tk}&from=${from}&to=${to}&apikey=${API_KEY}`);
         const d = await r.json();
         const hist = (d.historical || []).slice().reverse();
         return {
