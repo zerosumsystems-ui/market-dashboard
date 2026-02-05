@@ -22,8 +22,8 @@ export default async function handler(req, res) {
     const limit = Math.min(parseInt(req.query.limit) || 21, 30);
 
     const [rNYSE, rNASDAQ] = await Promise.all([
-      fetch(`${BASE}/stable/full-exchange-quotes?exchange=NYSE&apikey=${API_KEY}`),
-      fetch(`${BASE}/stable/full-exchange-quotes?exchange=NASDAQ&apikey=${API_KEY}`)
+      fetch(`${BASE}/stable/batch-exchange-quote?exchange=NYSE&apikey=${API_KEY}`),
+      fetch(`${BASE}/stable/batch-exchange-quote?exchange=NASDAQ&apikey=${API_KEY}`)
     ]);
     const [dNYSE, dNASDAQ] = await Promise.all([rNYSE.json(), rNASDAQ.json()]);
     const allQuotes = [...(dNYSE||[]), ...(dNASDAQ||[])];

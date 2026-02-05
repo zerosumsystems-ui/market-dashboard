@@ -3,7 +3,7 @@ const BASE = "https://financialmodelingprep.com";
 
 export default async function handler(req, res) {
   try {
-    const r = await fetch(`${BASE}/stable/batch-quote?symbols=SPY,QQQ,DIA,IWM&apikey=${API_KEY}`);
+    const r = await fetch(`${BASE}/stable/batch-quote?symbol=SPY,QQQ,DIA,IWM&apikey=${API_KEY}`);
     const data = await r.json();
     const names = { SPY:"S&P 500 (SPY)", QQQ:"NASDAQ 100 (QQQ)", DIA:"DOW 30 (DIA)", IWM:"Russell 2000 (IWM)" };
     res.json((data||[]).map(q=>({
