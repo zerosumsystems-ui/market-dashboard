@@ -141,7 +141,7 @@ canvas{width:100%!important;height:140px!important}
   <div class="stat-row" id="bStatsFull"><div class="shimmer"></div></div>
   <div class="sec"><h2>Historical Breadth (ZeroSumSystems)</h2><div class="line"></div></div>
   <div class="tw"><table>
-    <thead><tr><th>Date</th><th>Up 4%+</th><th>Dn 4%+</th><th>5d Ratio</th><th>10d Ratio</th><th>Up25%Q</th><th>Dn25%Q</th><th>Up25%M</th><th>Dn25%M</th><th>Up50%M</th><th>Dn50%M</th><th>Up13%34d</th><th>Dn13%34d</th><th>Univ</th></tr></thead>
+    <thead><tr><th>Date</th><th>Up 4%+</th><th>Dn 4%+</th><th>4% Ratio</th><th>Up 8%+</th><th>Dn 8%+</th><th>8% Ratio</th><th>5d Avg</th><th>10d Avg</th><th>Adv</th><th>Dec</th><th>Univ</th></tr></thead>
     <tbody id="seedTbl"></tbody>
   </table></div>
 </div>
@@ -192,7 +192,7 @@ canvas{width:100%!important;height:140px!important}
       <span class="scr-count" id="scrCount"></span>
     </div>
   </div>
-  <div class="scr-grid" id="scrGrid"><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div></div>
+  <div class="scr-grid" id="scrGrid"><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div></div>
 </div>
 
 <div class="footer">Market data powered by Financial Modeling Prep · Built by ZeroSumSystems · Not financial advice</div>
@@ -326,13 +326,35 @@ async function loadCharts() {
   }
 }
 
-// SEED DATA
-var SEED=[{d:"1/30/2026",u4:152,d4:458,r5:.57,r10:.94,uQ:1325,dQ:1081,uM:180,dM:98,u5M:35,d5M:23,u13:1359,d13:1603,un:6334},{d:"1/29/2026",u4:211,d4:411,r5:.71,r10:1.10,uQ:1449,dQ:1014,uM:245,dM:84,u5M:52,d5M:25,u13:1493,d13:1355,un:6331},{d:"1/28/2026",u4:174,d4:309,r5:1.14,r10:1.27,uQ:1434,dQ:975,uM:240,dM:80,u5M:59,d5M:20,u13:1547,d13:1275,un:6327},{d:"1/27/2026",u4:253,d4:166,r5:1.77,r10:1.33,uQ:1497,dQ:939,uM:224,dM:77,u5M:48,d5M:21,u13:1659,d13:1168,un:6320},{d:"1/26/2026",u4:159,d4:307,r5:1.32,r10:1.37,uQ:1489,dQ:944,uM:159,dM:78,u5M:35,d5M:20,u13:1649,d13:1178,un:6312},{d:"1/23/2026",u4:178,d4:189,r5:1.51,r10:1.54,uQ:1552,dQ:919,uM:196,dM:60,u5M:43,d5M:17,u13:1731,d13:1081,un:6309},{d:"1/22/2026",u4:438,d4:83,r5:1.61,r10:1.68,uQ:1659,dQ:890,uM:215,dM:61,u5M:44,d5M:22,u13:1897,d13:997,un:6302},{d:"1/21/2026",u4:536,d4:140,r5:1.39,r10:1.55,uQ:1587,dQ:958,uM:222,dM:69,u5M:53,d5M:21,u13:1814,d13:1101,un:6300},{d:"1/20/2026",u4:229,d4:447,r5:1.03,r10:1.50,uQ:1426,dQ:1001,uM:223,dM:74,u5M:61,d5M:21,u13:1571,d13:1183,un:6301},{d:"1/16/2026",u4:232,d4:211,r5:1.43,r10:1.98,uQ:1561,dQ:936,uM:248,dM:65,u5M:78,d5M:20,u13:1778,d13:1065,un:6300},{d:"1/15/2026",u4:288,d4:190,r5:1.57,r10:2.12,uQ:1598,dQ:922,uM:213,dM:60,u5M:55,d5M:18,u13:1802,d13:1016,un:6297},{d:"1/14/2026",u4:308,d4:155,r5:1.76,r10:2.08,uQ:1539,dQ:913,uM:203,dM:61,u5M:58,d5M:18,u13:1763,d13:964,un:6297},{d:"1/13/2026",u4:223,d4:245,r5:1.73,r10:1.97,uQ:1518,dQ:924,uM:155,dM:75,u5M:34,d5M:22,u13:1792,d13:972,un:6294},{d:"1/12/2026",u4:354,d4:180,r5:2.22,r10:1.75,uQ:1514,dQ:924,uM:133,dM:84,u5M:28,d5M:24,u13:1883,d13:934,un:6293},{d:"1/9/2026",u4:296,d4:166,r5:2.65,r10:1.59,uQ:1465,dQ:944,uM:135,dM:101,u5M:27,d5M:26,u13:2063,d13:948,un:6294}];
+// BREADTH HISTORY
 function u4C(v){return v>=400?'hsg':v>=250?'hg':''} function d4C(v){return v>=400?'hsr':v>=300?'hr':v>=200?'hy':''}
 function rC(v){return v>=2?'bull':v>=1?'neut':'bear'} function rB(v){return v>=2?'hsg':v>=1.5?'hg':v>=1?'':v>=.7?'hy':'hsr'}
-document.getElementById('seedTbl').innerHTML = SEED.map(function(r) {
-  return '<tr><td>'+r.d+'</td><td class="'+u4C(r.u4)+'">'+r.u4+'</td><td class="'+d4C(r.d4)+'">'+r.d4+'</td><td class="'+rB(r.r5)+'"><span class="br '+rC(r.r5)+'">'+r.r5.toFixed(2)+'</span></td><td class="'+rB(r.r10)+'"><span class="br '+rC(r.r10)+'">'+r.r10.toFixed(2)+'</span></td><td>'+r.uQ.toLocaleString()+'</td><td>'+r.dQ.toLocaleString()+'</td><td>'+r.uM+'</td><td>'+r.dM+'</td><td>'+r.u5M+'</td><td>'+r.d5M+'</td><td>'+r.u13.toLocaleString()+'</td><td>'+r.d13.toLocaleString()+'</td><td style="color:var(--t3)">'+r.un.toLocaleString()+'</td></tr>';
-}).join('');
+
+async function loadBreadthHistory() {
+  try {
+    var r = await fetch('/api/breadth-history'); var d = await r.json();
+    if (!d.days || !d.days.length) {
+      document.getElementById('seedTbl').innerHTML = '<tr><td colspan="12" style="text-align:center;color:var(--t3);padding:2rem">No historical data yet. Snapshots are stored on each refresh when Vercel KV is configured.</td></tr>';
+      return;
+    }
+    document.getElementById('seedTbl').innerHTML = d.days.map(function(r) {
+      return '<tr><td>'+r.dateLabel+'</td>' +
+        '<td class="'+u4C(r.u4)+'">'+r.u4+'</td>' +
+        '<td class="'+d4C(r.d4)+'">'+r.d4+'</td>' +
+        '<td class="'+rB(r.r4)+'"><span class="br '+rC(r.r4)+'">'+r.r4.toFixed(2)+'</span></td>' +
+        '<td class="'+u4C(r.u8)+'">'+r.u8+'</td>' +
+        '<td class="'+d4C(r.d8)+'">'+r.d8+'</td>' +
+        '<td class="'+rB(r.r8)+'"><span class="br '+rC(r.r8)+'">'+r.r8.toFixed(2)+'</span></td>' +
+        '<td>'+(r.r5!=null?'<span class="br '+rC(r.r5)+'">'+r.r5.toFixed(2)+'</span>':'--')+'</td>' +
+        '<td>'+(r.r10!=null?'<span class="br '+rC(r.r10)+'">'+r.r10.toFixed(2)+'</span>':'--')+'</td>' +
+        '<td style="color:var(--grn2)">'+r.adv.toLocaleString()+'</td>' +
+        '<td style="color:var(--red2)">'+r.dec.toLocaleString()+'</td>' +
+        '<td style="color:var(--t3)">'+r.universe.toLocaleString()+'</td></tr>';
+    }).join('');
+  } catch(e) {
+    document.getElementById('seedTbl').innerHTML = '<tr><td colspan="12"><div class="err">'+e.message+'</div></td></tr>';
+  }
+}
 
 // INIT
 SCREENER.init();
@@ -340,7 +362,7 @@ SCREENER.init();
 async function refreshAll() {
   var b = document.getElementById('refBtn');
   b.classList.add('ld'); b.textContent = 'LOADING...';
-  await Promise.allSettled([loadIdx(), loadBreadth(), loadMovers(), loadCharts()]);
+  await Promise.allSettled([loadIdx(), loadBreadth(), loadMovers(), loadCharts(), loadBreadthHistory()]);
   b.classList.remove('ld'); b.textContent = 'REFRESH';
 }
 refreshAll();

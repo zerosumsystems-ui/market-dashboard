@@ -1,29 +1,4 @@
-const API_KEY = process.env.FMP_API_KEY;
-const BASE = "https://financialmodelingprep.com";
-
-async function fetchJSON(url) {
-  const r = await fetch(url);
-  const text = await r.text();
-  try { return JSON.parse(text); } catch { return null; }
-}
-
-async function getAllQuotes() {
-  const symbols = await fetchJSON(`${BASE}/stable/company-symbols-list?apikey=${API_KEY}`);
-  if (!Array.isArray(symbols)) return [];
-  const usStocks = symbols
-    .filter(s => s.exchangeShortName === "NYSE" || s.exchangeShortName === "NASDAQ")
-    .map(s => s.symbol);
-
-  const CHUNK = 100;
-  const chunks = [];
-  for (let i = 0; i < usStocks.length; i += CHUNK) {
-    chunks.push(usStocks.slice(i, i + CHUNK).join(","));
-  }
-  const results = await Promise.all(chunks.map(c =>
-    fetchJSON(`${BASE}/stable/quote?symbol=${c}&apikey=${API_KEY}`)
-  ));
-  return results.flat().filter(Boolean);
-}
+import { getAllQuotes } from './_lib/quotes.js';
 
 export default async function handler(req, res) {
   try {
@@ -43,7 +18,7 @@ export default async function handler(req, res) {
     const maxGap = parseFloat(req.query.maxGap) || 999;
     const minRelVol = parseFloat(req.query.minRelVol) || 0;
     const sort = req.query.sort || "changeDesc";
-    const limit = Math.min(parseInt(req.query.limit) || 21, 30);
+    const limit = Math.min(parseInt(req.query.limit) || 9, 30);
 
     const allQuotes = await getAllQuotes();
 
@@ -51,7 +26,7 @@ export default async function handler(req, res) {
       const price = q.price ?? 0;
       const vol = q.volume ?? 0;
       const prevClose = q.previousClose ?? 0;
-      const chg = q.changesPercentage ?? (prevClose > 0 ? (q.change??0)/prevClose*100 : 0);
+      const chg = q.changesPercentage ?? (prevClose > 0 ? (q.change ?? 0) / prevClose * 100 : 0);
       const open = q.open ?? 0;
       const high = q.dayHigh ?? 0;
       const low = q.dayLow ?? 0;
@@ -71,7 +46,7 @@ export default async function handler(req, res) {
     });
 
     const getPrice = q => q.price ?? 0;
-    const getChg = q => q.changesPercentage ?? ((q.previousClose??0) > 0 ? (q.change??0)/(q.previousClose)*100 : 0);
+    const getChg = q => q.changesPercentage ?? ((q.previousClose ?? 0) > 0 ? (q.change ?? 0) / q.previousClose * 100 : 0);
     const getVol = q => q.volume ?? 0;
     const getGap = q => {
       const pc = q.previousClose ?? 0;
@@ -108,7 +83,7 @@ export default async function handler(req, res) {
         ticker: q.symbol,
         price, open, high, low, volume: vol,
         change: q.change ?? 0,
-        changePerc: q.changesPercentage ?? ((q.previousClose??0) > 0 ? +((q.change??0)/q.previousClose*100).toFixed(2) : 0),
+        changePerc: q.changesPercentage ?? ((q.previousClose ?? 0) > 0 ? +((q.change ?? 0) / q.previousClose * 100).toFixed(2) : 0),
         prevClose,
         prevVolume: avgVol,
         gap: prevClose > 0 ? +((open - prevClose) / prevClose * 100).toFixed(2) : 0,
