@@ -161,6 +161,7 @@ canvas{width:100%!important;height:140px!important}
   <div class="sec"><h2>Stock Screener</h2><div class="line"></div><button class="btn" id="scrFilterToggle">HIDE FILTERS</button></div>
   <div class="scr-filters" id="scrFilterPanel">
     <div class="scr-filters-grid">
+      <div class="scr-fg"><label>Name / Ticker</label><input type="text" id="fName" value="" placeholder="e.g. AAPL or Apple"></div>
       <div class="scr-fg"><label>Sector</label><select id="fSector">
         <option value="">All Sectors</option>
         <option value="Technology">Technology</option>
@@ -216,10 +217,16 @@ canvas{width:100%!important;height:140px!important}
       <div class="scr-fg"><label>Max Price ($)</label><input type="number" id="fMaxPrice" value="" placeholder="Any"></div>
       <div class="scr-fg"><label>Min Volume</label><input type="number" id="fMinVol" value="50000" placeholder="50000"></div>
       <div class="scr-fg"><label>Max Volume</label><input type="number" id="fMaxVol" value="" placeholder="Any"></div>
+      <div class="scr-fg"><label>Min Avg Volume</label><input type="number" id="fMinAvgVol" value="" placeholder="Any"></div>
+      <div class="scr-fg"><label>Max Avg Volume</label><input type="number" id="fMaxAvgVol" value="" placeholder="Any"></div>
       <div class="scr-fg"><label>Min Beta</label><input type="number" id="fMinBeta" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Max Beta</label><input type="number" id="fMaxBeta" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Min Dividend ($)</label><input type="number" id="fMinDiv" value="" placeholder="Any" step="0.01"></div>
       <div class="scr-fg"><label>Max Dividend ($)</label><input type="number" id="fMaxDiv" value="" placeholder="Any" step="0.01"></div>
+      <div class="scr-fg"><label>Min P/E Ratio</label><input type="number" id="fMinPE" value="" placeholder="Any" step="0.1"></div>
+      <div class="scr-fg"><label>Max P/E Ratio</label><input type="number" id="fMaxPE" value="" placeholder="Any" step="0.1"></div>
+      <div class="scr-fg"><label>Min EPS ($)</label><input type="number" id="fMinEPS" value="" placeholder="Any" step="0.01"></div>
+      <div class="scr-fg"><label>Max EPS ($)</label><input type="number" id="fMaxEPS" value="" placeholder="Any" step="0.01"></div>
       <div class="scr-fg"><label>Min % Change</label><input type="number" id="fMinChg" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Max % Change</label><input type="number" id="fMaxChg" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Min Gap %</label><input type="number" id="fMinGap" value="" placeholder="Any" step="0.1"></div>
@@ -229,6 +236,20 @@ canvas{width:100%!important;height:140px!important}
       <div class="scr-fg"><label>Min Rel Volume (x)</label><input type="number" id="fMinRelVol" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Min Open ($)</label><input type="number" id="fMinOpen" value="" placeholder="Any"></div>
       <div class="scr-fg"><label>Max Open ($)</label><input type="number" id="fMaxOpen" value="" placeholder="Any"></div>
+      <div class="scr-fg"><label>Min From Open %</label><input type="number" id="fMinFromOpen" value="" placeholder="Any" step="0.1"></div>
+      <div class="scr-fg"><label>Max From Open %</label><input type="number" id="fMaxFromOpen" value="" placeholder="Any" step="0.1"></div>
+      <div class="scr-fg"><label>Max % From 52w High</label><input type="number" id="fMaxFrom52H" value="" placeholder="e.g. 5" step="0.1" title="Within X% of 52-week high"></div>
+      <div class="scr-fg"><label>Min % From 52w Low</label><input type="number" id="fMinFrom52L" value="" placeholder="e.g. 10" step="0.1" title="At least X% above 52-week low"></div>
+      <div class="scr-fg"><label>Price vs 50d MA</label><select id="fVs50MA">
+        <option value="">Any</option>
+        <option value="above">Above 50d MA</option>
+        <option value="below">Below 50d MA</option>
+      </select></div>
+      <div class="scr-fg"><label>Price vs 200d MA</label><select id="fVs200MA">
+        <option value="">Any</option>
+        <option value="above">Above 200d MA</option>
+        <option value="below">Below 200d MA</option>
+      </select></div>
       <div class="scr-fg"><label>Include</label><select id="fType">
         <option value="stocks">Stocks Only</option>
         <option value="etfs">ETFs Only</option>
@@ -246,6 +267,11 @@ canvas{width:100%!important;height:140px!important}
         <option value="relVolDesc">Rel Volume (High-Low)</option>
         <option value="mcapDesc">Market Cap (High-Low)</option>
         <option value="mcapAsc">Market Cap (Low-High)</option>
+        <option value="peAsc">P/E Ratio (Low-High)</option>
+        <option value="peDesc">P/E Ratio (High-Low)</option>
+        <option value="epsDesc">EPS (High-Low)</option>
+        <option value="near52High">Nearest 52w High</option>
+        <option value="near52Low">Nearest 52w Low</option>
       </select></div>
     </div>
     <div class="scr-actions">
