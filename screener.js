@@ -1,5 +1,7 @@
 const SCREENER = {
   filters: {},
+  viewMode: 'cards',
+  lastData: null,
 
   init() {
     document.getElementById('scrFilterToggle').addEventListener('click', () => {
@@ -9,6 +11,24 @@ const SCREENER = {
     });
     document.getElementById('scrApply').addEventListener('click', () => this.applyAndLoad());
     document.getElementById('scrReset').addEventListener('click', () => this.resetFilters());
+
+    // View mode toggle
+    document.getElementById('scrViewCards').addEventListener('click', () => this.setView('cards'));
+    document.getElementById('scrViewTable').addEventListener('click', () => this.setView('table'));
+  },
+
+  setView(mode) {
+    this.viewMode = mode;
+    document.getElementById('scrViewCards').classList.toggle('active', mode === 'cards');
+    document.getElementById('scrViewTable').classList.toggle('active', mode === 'table');
+    document.getElementById('scrGrid').style.display = mode === 'cards' ? 'grid' : 'none';
+    document.getElementById('scrTableContainer').style.display = mode === 'table' ? 'block' : 'none';
+    if (this.lastData) {
+      if (mode === 'table') this.renderTable(this.lastData);
+      else this.renderCards(this.lastData);
+    } else {
+      this.applyAndLoad();
+    }
   },
 
   getVal(id, fallback) {
@@ -23,7 +43,6 @@ const SCREENER = {
 
   applyAndLoad() {
     this.filters = {
-      // FMP API-level filters
       name: this.getStr('fName'),
       sector: this.getStr('fSector'),
       industry: this.getStr('fIndustry'),
@@ -36,7 +55,6 @@ const SCREENER = {
       minDiv: this.getVal('fMinDiv', null),
       maxDiv: this.getVal('fMaxDiv', null),
       type: this.getStr('fType'),
-      // Quote-based filters
       minPrice: this.getVal('fMinPrice', 0),
       maxPrice: this.getVal('fMaxPrice', 999999),
       minVol: this.getVal('fMinVol', 0),
@@ -63,7 +81,7 @@ const SCREENER = {
       vs50MA: this.getStr('fVs50MA'),
       vs200MA: this.getStr('fVs200MA'),
       sort: document.getElementById('fSort').value,
-      limit: 9
+      limit: this.viewMode === 'table' ? 30 : 9
     };
     this.load();
   },
@@ -113,42 +131,105 @@ const SCREENER = {
 
   async load() {
     const grid = document.getElementById('scrGrid');
-    grid.innerHTML = Array(9).fill('<div class="scr-card shimmer" style="min-height:220px"></div>').join('');
+    const tableContainer = document.getElementById('scrTableContainer');
+
+    if (this.viewMode === 'cards') {
+      grid.innerHTML = Array(9).fill('<div class="scr-card shimmer" style="min-height:220px"></div>').join('');
+    } else {
+      tableContainer.innerHTML = '<div class="shimmer" style="min-height:300px"></div>';
+    }
+
     const f = this.filters;
     const params = new URLSearchParams();
     for (const [k, v] of Object.entries(f)) { if (v != null && v !== '') params.set(k, v); }
+
     try {
       const r = await fetch('/api/screener?' + params.toString());
       const d = await r.json();
       if (d.error) throw new Error(d.error);
+      this.lastData = d;
       document.getElementById('scrCount').textContent = d.count + ' shown / ' + d.total + ' matched';
-      if (!d.tickers.length) { grid.innerHTML = '<div class="err" style="grid-column:1/-1">No stocks match your filters</div>'; return; }
-      grid.innerHTML = d.tickers.map((t, i) => {
-        const u = t.changePerc >= 0;
-        const gu = t.gap >= 0;
-        return '<div class="scr-card" id="scr-' + i + '">' +
-          '<div class="scr-head">' +
-            '<span class="scr-tk">' + t.ticker + '</span>' +
-            '<span class="scr-px">' + t.price.toFixed(2) + '</span>' +
-          '</div>' +
-          '<div class="scr-meta">' +
-            '<span class="' + (u ? 'up-c' : 'dn-c') + '">' + (u ? '+' : '') + t.changePerc.toFixed(2) + '%</span>' +
-            '<span style="color:' + (gu ? 'var(--grn2)' : 'var(--red2)') + '">Gap ' + (gu ? '+' : '') + t.gap + '%</span>' +
-            '<span class="scr-vol">RVol: ' + t.relVol + 'x</span>' +
-            '<span class="scr-vol">Vol: ' + fmtVol(t.volume) + '</span>' +
-          '</div>' +
-          '<div style="font-family:JetBrains Mono,monospace;font-size:.5rem;color:var(--t3);margin-bottom:.3rem;display:flex;flex-wrap:wrap;gap:.4rem">' +
-            (t.sector ? '<span>' + t.sector + '</span>' : '') +
-            (t.mcap ? '<span>' + fmtMcap(t.mcap) + '</span>' : '') +
-            (t.pe ? '<span>PE: ' + t.pe.toFixed(1) + '</span>' : '') +
-            (t.eps ? '<span>EPS: $' + t.eps.toFixed(2) + '</span>' : '') +
-            (t.from52H != null ? '<span style="color:' + (Math.abs(t.from52H) < 5 ? 'var(--grn2)' : 'var(--t3)') + '">52wH: ' + t.from52H + '%</span>' : '') +
-          '</div>' +
-          '<canvas id="candle-' + i + '" class="scr-canvas"></canvas>' +
-        '</div>';
-      }).join('');
-      this.loadCandles(d.tickers.map(t => t.ticker));
-    } catch (e) { grid.innerHTML = '<div class="err" style="grid-column:1/-1">' + e.message + '</div>'; }
+
+      if (!d.tickers.length) {
+        grid.innerHTML = '<div class="err" style="grid-column:1/-1">No stocks match your filters</div>';
+        tableContainer.innerHTML = '<div class="err">No stocks match your filters</div>';
+        return;
+      }
+
+      if (this.viewMode === 'cards') {
+        this.renderCards(d);
+      } else {
+        this.renderTable(d);
+      }
+    } catch (e) {
+      grid.innerHTML = '<div class="err" style="grid-column:1/-1">' + e.message + '</div>';
+      tableContainer.innerHTML = '<div class="err">' + e.message + '</div>';
+    }
+  },
+
+  renderCards(d) {
+    const grid = document.getElementById('scrGrid');
+    grid.innerHTML = d.tickers.map((t, i) => {
+      const u = t.changePerc >= 0;
+      const gu = t.gap >= 0;
+      return '<div class="scr-card" id="scr-' + i + '">' +
+        '<div class="scr-head">' +
+          '<span class="scr-tk">' + t.ticker + '</span>' +
+          '<span class="scr-px">' + t.price.toFixed(2) + '</span>' +
+        '</div>' +
+        '<div class="scr-meta">' +
+          '<span class="' + (u ? 'up-c' : 'dn-c') + '">' + (u ? '+' : '') + t.changePerc.toFixed(2) + '%</span>' +
+          '<span style="color:' + (gu ? 'var(--grn2)' : 'var(--red2)') + '">Gap ' + (gu ? '+' : '') + t.gap + '%</span>' +
+          '<span class="scr-vol">RVol: ' + t.relVol + 'x</span>' +
+          '<span class="scr-vol">Vol: ' + fmtVol(t.volume) + '</span>' +
+        '</div>' +
+        '<div style="font-family:JetBrains Mono,monospace;font-size:.5rem;color:var(--t3);margin-bottom:.3rem;display:flex;flex-wrap:wrap;gap:.4rem">' +
+          (t.sector ? '<span>' + t.sector + '</span>' : '') +
+          (t.mcap ? '<span>' + fmtMcap(t.mcap) + '</span>' : '') +
+          (t.pe ? '<span>PE: ' + t.pe.toFixed(1) + '</span>' : '') +
+          (t.eps ? '<span>EPS: $' + t.eps.toFixed(2) + '</span>' : '') +
+          (t.from52H != null ? '<span style="color:' + (Math.abs(t.from52H) < 5 ? 'var(--grn2)' : 'var(--t3)') + '">52wH: ' + t.from52H + '%</span>' : '') +
+        '</div>' +
+        '<canvas id="candle-' + i + '" class="scr-canvas"></canvas>' +
+      '</div>';
+    }).join('');
+    this.loadCandles(d.tickers.map(t => t.ticker));
+  },
+
+  renderTable(d) {
+    const container = document.getElementById('scrTableContainer');
+    let html = '<div class="scr-table-wrap"><table>' +
+      '<thead><tr>' +
+      '<th>Ticker</th><th>Company</th><th>Price</th><th>Change</th><th>% Chg</th><th>Gap%</th>' +
+      '<th>Volume</th><th>RVol</th><th>Range%</th><th>Sector</th><th>MCap</th>' +
+      '<th>P/E</th><th>EPS</th><th>52w H%</th><th>50d MA</th><th>200d MA</th>' +
+      '</tr></thead><tbody>';
+
+    for (const t of d.tickers) {
+      const u = t.changePerc >= 0;
+      const gu = t.gap >= 0;
+      html += '<tr>' +
+        '<td>' + t.ticker + '</td>' +
+        '<td>' + (t.name || '') + '</td>' +
+        '<td>' + t.price.toFixed(2) + '</td>' +
+        '<td class="' + (u ? 'up-c' : 'dn-c') + '">' + (u ? '+' : '') + t.change.toFixed(2) + '</td>' +
+        '<td class="' + (u ? 'up-c' : 'dn-c') + '">' + (u ? '+' : '') + t.changePerc.toFixed(2) + '%</td>' +
+        '<td style="color:' + (gu ? 'var(--grn2)' : 'var(--red2)') + '">' + (gu ? '+' : '') + t.gap + '%</td>' +
+        '<td style="color:var(--t2)">' + fmtVol(t.volume) + '</td>' +
+        '<td style="color:var(--t2)">' + t.relVol + 'x</td>' +
+        '<td>' + t.range + '%</td>' +
+        '<td style="color:var(--t3)">' + (t.sector || '--') + '</td>' +
+        '<td style="color:var(--t2)">' + (t.mcap ? fmtMcap(t.mcap) : '--') + '</td>' +
+        '<td>' + (t.pe ? t.pe.toFixed(1) : '--') + '</td>' +
+        '<td>' + (t.eps ? '$' + t.eps.toFixed(2) : '--') + '</td>' +
+        '<td style="color:' + (t.from52H != null && Math.abs(t.from52H) < 5 ? 'var(--grn2)' : 'var(--t3)') + '">' + (t.from52H != null ? t.from52H + '%' : '--') + '</td>' +
+        '<td>' + (t.priceAvg50 ? '$' + t.priceAvg50.toFixed(2) : '--') + '</td>' +
+        '<td>' + (t.priceAvg200 ? '$' + t.priceAvg200.toFixed(2) : '--') + '</td>' +
+      '</tr>';
+    }
+
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
   },
 
   async loadCandles(tickers) {
