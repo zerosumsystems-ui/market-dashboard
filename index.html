@@ -161,10 +161,65 @@ canvas{width:100%!important;height:140px!important}
   <div class="sec"><h2>Stock Screener</h2><div class="line"></div><button class="btn" id="scrFilterToggle">HIDE FILTERS</button></div>
   <div class="scr-filters" id="scrFilterPanel">
     <div class="scr-filters-grid">
+      <div class="scr-fg"><label>Sector</label><select id="fSector">
+        <option value="">All Sectors</option>
+        <option value="Technology">Technology</option>
+        <option value="Healthcare">Healthcare</option>
+        <option value="Financial Services">Financial Services</option>
+        <option value="Consumer Cyclical">Consumer Cyclical</option>
+        <option value="Consumer Defensive">Consumer Defensive</option>
+        <option value="Energy">Energy</option>
+        <option value="Industrials">Industrials</option>
+        <option value="Basic Materials">Basic Materials</option>
+        <option value="Communication Services">Communication Services</option>
+        <option value="Real Estate">Real Estate</option>
+        <option value="Utilities">Utilities</option>
+      </select></div>
+      <div class="scr-fg"><label>Industry</label><input type="text" id="fIndustry" value="" placeholder="e.g. Software"></div>
+      <div class="scr-fg"><label>Exchange</label><select id="fExchange">
+        <option value="">All US Exchanges</option>
+        <option value="NYSE">NYSE</option>
+        <option value="NASDAQ">NASDAQ</option>
+        <option value="AMEX">AMEX</option>
+      </select></div>
+      <div class="scr-fg"><label>Country</label><select id="fCountry">
+        <option value="">Any Country</option>
+        <option value="US" selected>United States</option>
+        <option value="CA">Canada</option>
+        <option value="GB">United Kingdom</option>
+        <option value="CN">China</option>
+        <option value="JP">Japan</option>
+        <option value="DE">Germany</option>
+        <option value="FR">France</option>
+        <option value="BR">Brazil</option>
+        <option value="IN">India</option>
+        <option value="HK">Hong Kong</option>
+      </select></div>
+      <div class="scr-fg"><label>Min Market Cap</label><select id="fMinMcap">
+        <option value="">Any</option>
+        <option value="10000000">$10M+ (Nano)</option>
+        <option value="50000000">$50M+ (Micro)</option>
+        <option value="300000000">$300M+ (Small)</option>
+        <option value="2000000000">$2B+ (Mid)</option>
+        <option value="10000000000">$10B+ (Large)</option>
+        <option value="200000000000">$200B+ (Mega)</option>
+      </select></div>
+      <div class="scr-fg"><label>Max Market Cap</label><select id="fMaxMcap">
+        <option value="">Any</option>
+        <option value="50000000">Up to $50M</option>
+        <option value="300000000">Up to $300M</option>
+        <option value="2000000000">Up to $2B</option>
+        <option value="10000000000">Up to $10B</option>
+        <option value="200000000000">Up to $200B</option>
+      </select></div>
       <div class="scr-fg"><label>Min Price ($)</label><input type="number" id="fMinPrice" value="2" placeholder="2"></div>
       <div class="scr-fg"><label>Max Price ($)</label><input type="number" id="fMaxPrice" value="" placeholder="Any"></div>
       <div class="scr-fg"><label>Min Volume</label><input type="number" id="fMinVol" value="50000" placeholder="50000"></div>
       <div class="scr-fg"><label>Max Volume</label><input type="number" id="fMaxVol" value="" placeholder="Any"></div>
+      <div class="scr-fg"><label>Min Beta</label><input type="number" id="fMinBeta" value="" placeholder="Any" step="0.1"></div>
+      <div class="scr-fg"><label>Max Beta</label><input type="number" id="fMaxBeta" value="" placeholder="Any" step="0.1"></div>
+      <div class="scr-fg"><label>Min Dividend ($)</label><input type="number" id="fMinDiv" value="" placeholder="Any" step="0.01"></div>
+      <div class="scr-fg"><label>Max Dividend ($)</label><input type="number" id="fMaxDiv" value="" placeholder="Any" step="0.01"></div>
       <div class="scr-fg"><label>Min % Change</label><input type="number" id="fMinChg" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Max % Change</label><input type="number" id="fMaxChg" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Min Gap %</label><input type="number" id="fMinGap" value="" placeholder="Any" step="0.1"></div>
@@ -174,6 +229,11 @@ canvas{width:100%!important;height:140px!important}
       <div class="scr-fg"><label>Min Rel Volume (x)</label><input type="number" id="fMinRelVol" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Min Open ($)</label><input type="number" id="fMinOpen" value="" placeholder="Any"></div>
       <div class="scr-fg"><label>Max Open ($)</label><input type="number" id="fMaxOpen" value="" placeholder="Any"></div>
+      <div class="scr-fg"><label>Include</label><select id="fType">
+        <option value="stocks">Stocks Only</option>
+        <option value="etfs">ETFs Only</option>
+        <option value="all">Stocks + ETFs</option>
+      </select></div>
       <div class="scr-fg"><label>Sort By</label><select id="fSort">
         <option value="changeDesc">% Change (High-Low)</option>
         <option value="changeAsc">% Change (Low-High)</option>
@@ -184,6 +244,8 @@ canvas{width:100%!important;height:140px!important}
         <option value="gapDesc">Gap % (High-Low)</option>
         <option value="rangeDesc">Range % (High-Low)</option>
         <option value="relVolDesc">Rel Volume (High-Low)</option>
+        <option value="mcapDesc">Market Cap (High-Low)</option>
+        <option value="mcapAsc">Market Cap (Low-High)</option>
       </select></div>
     </div>
     <div class="scr-actions">
