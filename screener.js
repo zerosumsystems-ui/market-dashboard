@@ -16,8 +16,26 @@ const SCREENER = {
     return v === '' || v == null ? fallback : parseFloat(v);
   },
 
+  getStr(id) {
+    const v = document.getElementById(id)?.value;
+    return v || '';
+  },
+
   applyAndLoad() {
     this.filters = {
+      // FMP API-level filters
+      sector: this.getStr('fSector'),
+      industry: this.getStr('fIndustry'),
+      exchange: this.getStr('fExchange'),
+      country: this.getStr('fCountry'),
+      minMcap: this.getStr('fMinMcap'),
+      maxMcap: this.getStr('fMaxMcap'),
+      minBeta: this.getVal('fMinBeta', null),
+      maxBeta: this.getVal('fMaxBeta', null),
+      minDiv: this.getVal('fMinDiv', null),
+      maxDiv: this.getVal('fMaxDiv', null),
+      type: this.getStr('fType'),
+      // Client-side / quote-based filters
       minPrice: this.getVal('fMinPrice', 0),
       maxPrice: this.getVal('fMaxPrice', 999999),
       minVol: this.getVal('fMinVol', 0),
@@ -38,6 +56,17 @@ const SCREENER = {
   },
 
   resetFilters() {
+    document.getElementById('fSector').value = '';
+    document.getElementById('fIndustry').value = '';
+    document.getElementById('fExchange').value = '';
+    document.getElementById('fCountry').value = 'US';
+    document.getElementById('fMinMcap').value = '';
+    document.getElementById('fMaxMcap').value = '';
+    document.getElementById('fMinBeta').value = '';
+    document.getElementById('fMaxBeta').value = '';
+    document.getElementById('fMinDiv').value = '';
+    document.getElementById('fMaxDiv').value = '';
+    document.getElementById('fType').value = 'stocks';
     document.getElementById('fMinPrice').value = '2';
     document.getElementById('fMaxPrice').value = '';
     document.getElementById('fMinVol').value = '50000';
@@ -61,7 +90,7 @@ const SCREENER = {
     grid.innerHTML = Array(9).fill('<div class="scr-card shimmer" style="min-height:220px"></div>').join('');
     const f = this.filters;
     const params = new URLSearchParams();
-    for (const [k, v] of Object.entries(f)) { if (v != null) params.set(k, v); }
+    for (const [k, v] of Object.entries(f)) { if (v != null && v !== '') params.set(k, v); }
     try {
       const r = await fetch('/api/screener?' + params.toString());
       const d = await r.json();
@@ -82,6 +111,7 @@ const SCREENER = {
             '<span class="scr-vol">RVol: ' + t.relVol + 'x</span>' +
             '<span class="scr-vol">Vol: ' + fmtVol(t.volume) + '</span>' +
           '</div>' +
+          (t.sector ? '<div style="font-family:JetBrains Mono,monospace;font-size:.5rem;color:var(--t3);margin-bottom:.3rem">' + t.sector + (t.mcap ? ' · ' + fmtMcap(t.mcap) : '') + '</div>' : '') +
           '<canvas id="candle-' + i + '" class="scr-canvas"></canvas>' +
         '</div>';
       }).join('');
@@ -147,4 +177,11 @@ function fmtVol(v) {
   if (v >= 1e6) return (v / 1e6).toFixed(1) + 'M';
   if (v >= 1e3) return (v / 1e3).toFixed(1) + 'K';
   return v;
+}
+
+function fmtMcap(v) {
+  if (v >= 1e12) return '$' + (v / 1e12).toFixed(1) + 'T';
+  if (v >= 1e9) return '$' + (v / 1e9).toFixed(1) + 'B';
+  if (v >= 1e6) return '$' + (v / 1e6).toFixed(0) + 'M';
+  return '$' + v;
 }
