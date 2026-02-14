@@ -1,94 +1,49 @@
-const API_KEY = process.env.FMP_API_KEY;
-const BASE = "https://financialmodelingprep.com";
-
-async function fetchJSON(url) {
-  const r = await fetch(url);
-  if (!r.ok) return null;
-  try { return await r.json(); } catch { return null; }
-}
-
-async function batchQuote(symbols) {
-  const CHUNK = 200;
-  const chunks = [];
-  for (let i = 0; i < symbols.length; i += CHUNK) {
-    chunks.push(symbols.slice(i, i + CHUNK).join(","));
-  }
-  const all = [];
-  // Run 15 concurrent requests at a time for speed
-  for (let i = 0; i < chunks.length; i += 15) {
-    const batch = chunks.slice(i, i + 15);
-    const results = await Promise.allSettled(batch.map(c =>
-      fetchJSON(`${BASE}/stable/batch-quote?symbols=${c}&apikey=${API_KEY}`)
-    ));
-    for (const r of results) {
-      if (r.status === 'fulfilled' && Array.isArray(r.value)) {
-        all.push(...r.value);
-      }
-    }
-  }
-  return all.filter(Boolean);
-}
-
-const US_EXCHANGES = new Set(['NYSE', 'NASDAQ', 'AMEX', 'NYSEArca', 'NYSEAMERICAN', 'NasdaqGS', 'NasdaqGM', 'NasdaqCM']);
+import { getRange, px } from './databento.js';
 
 export async function getAllQuotes() {
-  // Strategy 1: batch-exchange-quote (fastest if available)
-  try {
-    const [nyseRes, nasdaqRes] = await Promise.all([
-      fetch(`${BASE}/stable/batch-exchange-quote?exchange=NYSE&apikey=${API_KEY}`),
-      fetch(`${BASE}/stable/batch-exchange-quote?exchange=NASDAQ&apikey=${API_KEY}`)
-    ]);
-    if (nyseRes.ok && nasdaqRes.ok) {
-      const [nyse, nasdaq] = await Promise.all([nyseRes.json(), nasdaqRes.json()]);
-      if (Array.isArray(nyse) && Array.isArray(nasdaq)) {
-        const all = [...nyse, ...nasdaq].filter(q => q && q.symbol);
-        if (all.length > 1000) return all;
-      }
-    }
-  } catch {}
+  // Fetch last 5 calendar days to ensure at least 2 trading days
+  const end = new Date(); end.setDate(end.getDate() + 1);
+  const start = new Date(); start.setDate(start.getDate() - 5);
 
-  // Strategy 2: stock-list → filter US stocks → batch-quote (8000+ stocks)
-  try {
-    const list = await fetchJSON(`${BASE}/stable/stock-list?apikey=${API_KEY}`);
-    if (Array.isArray(list) && list.length > 1000) {
-      const usStocks = list.filter(s =>
-        s.symbol &&
-        s.type === 'stock' &&
-        s.exchangeShortName &&
-        US_EXCHANGES.has(s.exchangeShortName)
-      );
-      const symbols = [...new Set(usStocks.map(s => s.symbol))];
-      if (symbols.length > 1000) {
-        return await batchQuote(symbols);
-      }
-    }
-  } catch {}
+  const records = await getRange({
+    schema: 'ohlcv-1d',
+    symbols: 'ALL_SYMBOLS',
+    start: start.toISOString().slice(0, 10),
+    end: end.toISOString().slice(0, 10),
+  });
 
-  // Strategy 3: company-screener with pagination for broad coverage
-  try {
-    const pages = await Promise.all([
-      fetchJSON(`${BASE}/stable/company-screener?exchange=NYSE,NASDAQ,AMEX&isActivelyTrading=true&limit=5000&offset=0&apikey=${API_KEY}`),
-      fetchJSON(`${BASE}/stable/company-screener?exchange=NYSE,NASDAQ,AMEX&isActivelyTrading=true&limit=5000&offset=5000&apikey=${API_KEY}`)
-    ]);
-    const combined = [...(pages[0] || []), ...(pages[1] || [])];
-    if (combined.length > 100) {
-      const symbols = [...new Set(combined.map(s => s.symbol).filter(Boolean))];
-      return await batchQuote(symbols);
-    }
-  } catch {}
+  // Group by symbol
+  const bySymbol = {};
+  for (const r of records) {
+    if (!r.symbol) continue;
+    if (!bySymbol[r.symbol]) bySymbol[r.symbol] = [];
+    bySymbol[r.symbol].push(r);
+  }
 
-  // Strategy 4: S&P 500 + NASDAQ 100 as last resort
-  try {
-    const [sp500, nasdaq100] = await Promise.all([
-      fetchJSON(`${BASE}/stable/sp500-constituent?apikey=${API_KEY}`),
-      fetchJSON(`${BASE}/stable/nasdaq-constituent?apikey=${API_KEY}`)
-    ]);
-    const combined = [...(sp500 || []), ...(nasdaq100 || [])];
-    const symbols = [...new Set(combined.map(s => s.symbol).filter(Boolean))];
-    if (symbols.length > 50) {
-      return await batchQuote(symbols);
-    }
-  } catch {}
+  // Build quote objects from latest 2 trading days per symbol
+  const quotes = [];
+  for (const [symbol, bars] of Object.entries(bySymbol)) {
+    bars.sort((a, b) => (a.hd.ts_event > b.hd.ts_event ? 1 : -1));
+    const latest = bars[bars.length - 1];
+    const prev = bars.length > 1 ? bars[bars.length - 2] : null;
 
-  return [];
+    const price = px(latest.close);
+    const open = px(latest.open);
+    const high = px(latest.high);
+    const low = px(latest.low);
+    const volume = latest.volume ?? 0;
+    const previousClose = prev ? px(prev.close) : 0;
+    const change = previousClose ? +(price - previousClose).toFixed(4) : 0;
+    const changePercentage = previousClose > 0 ? +((change / previousClose) * 100).toFixed(2) : 0;
+
+    if (price <= 0) continue;
+
+    quotes.push({
+      symbol, price, open,
+      dayHigh: high, dayLow: low,
+      volume, previousClose, change, changePercentage,
+    });
+  }
+
+  return quotes;
 }
