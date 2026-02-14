@@ -38,6 +38,10 @@ const SCREENER = {
       maxOpen: this.getVal('fMaxOpen', 999999),
       minFromOpen: this.getVal('fMinFromOpen', -999),
       maxFromOpen: this.getVal('fMaxFromOpen', 999),
+      minRelVol: this.getVal('fMinRelVol', 0),
+      maxRelVol: this.getVal('fMaxRelVol', 99999),
+      minAvgVol: this.getVal('fMinAvgVol', 0),
+      volHigh: document.getElementById('fVolHigh').value,
       sort: document.getElementById('fSort').value,
       limit: 9
     };
@@ -60,6 +64,10 @@ const SCREENER = {
     document.getElementById('fMaxOpen').value = '';
     document.getElementById('fMinFromOpen').value = '';
     document.getElementById('fMaxFromOpen').value = '';
+    document.getElementById('fMinRelVol').value = '';
+    document.getElementById('fMaxRelVol').value = '';
+    document.getElementById('fMinAvgVol').value = '';
+    document.getElementById('fVolHigh').value = '';
     document.getElementById('fSort').value = 'changeDesc';
     this.filters = {};
     this.load();
@@ -90,12 +98,15 @@ const SCREENER = {
             '<span style="color:' + (gu ? 'var(--grn2)' : 'var(--red2)') + '">Gap ' + (gu ? '+' : '') + t.gap + '%</span>' +
             '<span class="scr-vol">Range: ' + t.range + '%</span>' +
             '<span class="scr-vol">Vol: ' + fmtVol(t.volume) + '</span>' +
+            (t.relVol ? '<span style="color:' + (t.relVol >= 2 ? '#fbbf24' : 'var(--t3)') + '">RVol: ' + t.relVol + 'x</span>' : '') +
+            (t.isVolHigh ? '<span style="color:#fbbf24;font-weight:700">' + t.volDays + 'D VOL HIGH</span>' : '') +
           '</div>' +
           '<div style="font-family:JetBrains Mono,monospace;font-size:.5rem;color:var(--t3);margin-bottom:.3rem;display:flex;flex-wrap:wrap;gap:.4rem">' +
             '<span>O: ' + t.open.toFixed(2) + '</span>' +
             '<span>H: ' + t.high.toFixed(2) + '</span>' +
             '<span>L: ' + t.low.toFixed(2) + '</span>' +
             (t.fromOpen != null ? '<span>From Open: ' + (t.fromOpen >= 0 ? '+' : '') + t.fromOpen + '%</span>' : '') +
+            (t.avgVol ? '<span>Avg Vol: ' + fmtVol(t.avgVol) + '</span>' : '') +
           '</div>' +
           '<canvas id="candle-' + i + '" class="scr-canvas"></canvas>' +
         '</div>';

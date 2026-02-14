@@ -1,4 +1,4 @@
-import { getAllQuotes } from './_lib/quotes.js';
+import { getScreenerQuotes } from './_lib/quotes.js';
 
 export default async function handler(req, res) {
   try {
@@ -17,11 +17,17 @@ export default async function handler(req, res) {
     const maxGap = parseFloat(req.query.maxGap) || 999;
     const minFromOpen = parseFloat(req.query.minFromOpen) || -999;
     const maxFromOpen = parseFloat(req.query.maxFromOpen) || 999;
+    // Volume metrics filters
+    const minRelVol = parseFloat(req.query.minRelVol) || 0;
+    const maxRelVol = parseFloat(req.query.maxRelVol) || 99999;
+    const minAvgVol = parseFloat(req.query.minAvgVol) || 0;
+    const volHigh = req.query.volHigh === '1';
+
     const nameFilter = (req.query.name || '').toLowerCase();
     const sort = req.query.sort || "changeDesc";
     const limit = Math.min(parseInt(req.query.limit) || 9, 30);
 
-    const quotes = await getAllQuotes();
+    const quotes = await getScreenerQuotes(90);
 
     // Apply filters
     let tickers = quotes.filter(q => {
@@ -45,6 +51,10 @@ export default async function handler(req, res) {
       if (range < minRange || range > maxRange) return false;
       if (gap < minGap || gap > maxGap) return false;
       if (fromOpen < minFromOpen || fromOpen > maxFromOpen) return false;
+      // Volume metric filters
+      if (q.relVol < minRelVol || q.relVol > maxRelVol) return false;
+      if (q.avgVol < minAvgVol) return false;
+      if (volHigh && !q.isVolHigh) return false;
       return true;
     });
 
@@ -63,6 +73,7 @@ export default async function handler(req, res) {
     else if (sort === "priceAsc") tickers.sort((a, b) => getPrice(a) - getPrice(b));
     else if (sort === "gapDesc") tickers.sort((a, b) => getGap(b) - getGap(a));
     else if (sort === "rangeDesc") tickers.sort((a, b) => getRange(b) - getRange(a));
+    else if (sort === "relVolDesc") tickers.sort((a, b) => b.relVol - a.relVol);
 
     const total = tickers.length;
     const selected = tickers.slice(0, limit).map(q => {
@@ -81,6 +92,11 @@ export default async function handler(req, res) {
         gap: prevClose > 0 ? +((open - prevClose) / prevClose * 100).toFixed(2) : 0,
         range: price > 0 ? +((high - low) / price * 100).toFixed(2) : 0,
         fromOpen: open > 0 ? +((price - open) / open * 100).toFixed(2) : 0,
+        avgVol: q.avgVol,
+        relVol: q.relVol,
+        volDays: q.volDays,
+        isVolHigh: q.isVolHigh,
+        volPerc: q.volPerc,
       };
     });
 
