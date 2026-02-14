@@ -1,24 +1,47 @@
-const API_KEY = process.env.FMP_API_KEY;
-const BASE = "https://financialmodelingprep.com";
-const ETFS = ["SPY","QQQ","DIA","IWM"];
+import { getRange, px } from './_lib/databento.js';
+
+const ETFS = ["SPY", "QQQ", "DIA", "IWM"];
+const NAMES = { SPY: "S&P 500 (SPY)", QQQ: "NASDAQ 100 (QQQ)", DIA: "DOW 30 (DIA)", IWM: "Russell 2000 (IWM)" };
 
 export default async function handler(req, res) {
   try {
-    const quotes = await Promise.all(ETFS.map(async sym => {
-      const r = await fetch(`${BASE}/stable/quote?symbol=${sym}&apikey=${API_KEY}`);
-      const data = await r.json();
-      return Array.isArray(data) ? data[0] : data;
-    }));
-    const names = { SPY:"S&P 500 (SPY)", QQQ:"NASDAQ 100 (QQQ)", DIA:"DOW 30 (DIA)", IWM:"Russell 2000 (IWM)" };
-    res.json(quotes.filter(Boolean).map(q=>{
-      const change = q.change??0;
-      const prevClose = q.previousClose??0;
-      const pct = q.changePercentage ?? q.changesPercentage ?? (prevClose > 0 ? +(change/prevClose*100).toFixed(2) : 0);
+    const end = new Date(); end.setDate(end.getDate() + 1);
+    const start = new Date(); start.setDate(start.getDate() - 5);
+
+    const records = await getRange({
+      schema: 'ohlcv-1d',
+      symbols: ETFS,
+      start: start.toISOString().slice(0, 10),
+      end: end.toISOString().slice(0, 10),
+    });
+
+    // Group by symbol, sort by date
+    const bySymbol = {};
+    for (const r of records) {
+      if (!r.symbol) continue;
+      if (!bySymbol[r.symbol]) bySymbol[r.symbol] = [];
+      bySymbol[r.symbol].push(r);
+    }
+
+    const quotes = ETFS.map(sym => {
+      const bars = (bySymbol[sym] || []).sort((a, b) =>
+        a.hd.ts_event > b.hd.ts_event ? 1 : -1
+      );
+      if (!bars.length) return null;
+      const latest = bars[bars.length - 1];
+      const prev = bars.length > 1 ? bars[bars.length - 2] : null;
+      const price = px(latest.close);
+      const prevClose = prev ? px(prev.close) : 0;
+      const change = prevClose ? +(price - prevClose).toFixed(2) : 0;
+      const pct = prevClose > 0 ? +((change / prevClose) * 100).toFixed(2) : 0;
       return {
-        ticker:q.symbol, name:names[q.symbol]||q.symbol,
-        price:q.price??0, open:q.open??0, high:q.dayHigh??0, low:q.dayLow??0,
-        volume:q.volume??0, change, changePerc:pct, prevClose
+        ticker: sym, name: NAMES[sym] || sym,
+        price, open: px(latest.open), high: px(latest.high), low: px(latest.low),
+        volume: latest.volume ?? 0, change, changePerc: pct, prevClose
       };
-    }));
-  } catch(e) { res.status(500).json({error:e.message}); }
+    }).filter(Boolean);
+
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
+    res.json(quotes);
+  } catch (e) { res.status(500).json({ error: e.message }); }
 }

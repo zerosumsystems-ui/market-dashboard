@@ -23,45 +23,25 @@ const SCREENER = {
 
   applyAndLoad() {
     this.filters = {
-      // FMP API-level filters
       name: this.getStr('fName'),
-      sector: this.getStr('fSector'),
-      industry: this.getStr('fIndustry'),
-      exchange: this.getStr('fExchange'),
-      country: this.getStr('fCountry'),
-      minMcap: this.getStr('fMinMcap'),
-      maxMcap: this.getStr('fMaxMcap'),
-      minBeta: this.getVal('fMinBeta', null),
-      maxBeta: this.getVal('fMaxBeta', null),
-      minDiv: this.getVal('fMinDiv', null),
-      maxDiv: this.getVal('fMaxDiv', null),
-      type: this.getStr('fType'),
-      // Quote-based filters
       minPrice: this.getVal('fMinPrice', 0),
       maxPrice: this.getVal('fMaxPrice', 999999),
       minVol: this.getVal('fMinVol', 0),
       maxVol: this.getVal('fMaxVol', 999999999999),
-      minAvgVol: this.getVal('fMinAvgVol', 0),
-      maxAvgVol: this.getVal('fMaxAvgVol', 999999999999),
       minChange: this.getVal('fMinChg', -999),
       maxChange: this.getVal('fMaxChg', 999),
       minGap: this.getVal('fMinGap', -999),
       maxGap: this.getVal('fMaxGap', 999),
       minRange: this.getVal('fMinRange', 0),
       maxRange: this.getVal('fMaxRange', 999),
-      minRelVol: this.getVal('fMinRelVol', 0),
       minOpen: this.getVal('fMinOpen', 0),
       maxOpen: this.getVal('fMaxOpen', 999999),
       minFromOpen: this.getVal('fMinFromOpen', -999),
       maxFromOpen: this.getVal('fMaxFromOpen', 999),
-      minPE: this.getVal('fMinPE', null),
-      maxPE: this.getVal('fMaxPE', null),
-      minEPS: this.getVal('fMinEPS', null),
-      maxEPS: this.getVal('fMaxEPS', null),
-      maxFrom52H: this.getVal('fMaxFrom52H', null),
-      minFrom52L: this.getVal('fMinFrom52L', null),
-      vs50MA: this.getStr('fVs50MA'),
-      vs200MA: this.getStr('fVs200MA'),
+      minRelVol: this.getVal('fMinRelVol', 0),
+      maxRelVol: this.getVal('fMaxRelVol', 99999),
+      minAvgVol: this.getVal('fMinAvgVol', 0),
+      volHigh: document.getElementById('fVolHigh').value,
       sort: document.getElementById('fSort').value,
       limit: 9
     };
@@ -70,42 +50,24 @@ const SCREENER = {
 
   resetFilters() {
     document.getElementById('fName').value = '';
-    document.getElementById('fSector').value = '';
-    document.getElementById('fIndustry').value = '';
-    document.getElementById('fExchange').value = '';
-    document.getElementById('fCountry').value = 'US';
-    document.getElementById('fMinMcap').value = '';
-    document.getElementById('fMaxMcap').value = '';
-    document.getElementById('fMinBeta').value = '';
-    document.getElementById('fMaxBeta').value = '';
-    document.getElementById('fMinDiv').value = '';
-    document.getElementById('fMaxDiv').value = '';
-    document.getElementById('fType').value = 'stocks';
     document.getElementById('fMinPrice').value = '2';
     document.getElementById('fMaxPrice').value = '';
     document.getElementById('fMinVol').value = '50000';
     document.getElementById('fMaxVol').value = '';
-    document.getElementById('fMinAvgVol').value = '';
-    document.getElementById('fMaxAvgVol').value = '';
     document.getElementById('fMinChg').value = '';
     document.getElementById('fMaxChg').value = '';
     document.getElementById('fMinGap').value = '';
     document.getElementById('fMaxGap').value = '';
     document.getElementById('fMinRange').value = '';
     document.getElementById('fMaxRange').value = '';
-    document.getElementById('fMinRelVol').value = '';
     document.getElementById('fMinOpen').value = '';
     document.getElementById('fMaxOpen').value = '';
     document.getElementById('fMinFromOpen').value = '';
     document.getElementById('fMaxFromOpen').value = '';
-    document.getElementById('fMinPE').value = '';
-    document.getElementById('fMaxPE').value = '';
-    document.getElementById('fMinEPS').value = '';
-    document.getElementById('fMaxEPS').value = '';
-    document.getElementById('fMaxFrom52H').value = '';
-    document.getElementById('fMinFrom52L').value = '';
-    document.getElementById('fVs50MA').value = '';
-    document.getElementById('fVs200MA').value = '';
+    document.getElementById('fMinRelVol').value = '';
+    document.getElementById('fMaxRelVol').value = '';
+    document.getElementById('fMinAvgVol').value = '';
+    document.getElementById('fVolHigh').value = '';
     document.getElementById('fSort').value = 'changeDesc';
     this.filters = {};
     this.load();
@@ -134,15 +96,17 @@ const SCREENER = {
           '<div class="scr-meta">' +
             '<span class="' + (u ? 'up-c' : 'dn-c') + '">' + (u ? '+' : '') + t.changePerc.toFixed(2) + '%</span>' +
             '<span style="color:' + (gu ? 'var(--grn2)' : 'var(--red2)') + '">Gap ' + (gu ? '+' : '') + t.gap + '%</span>' +
-            '<span class="scr-vol">RVol: ' + t.relVol + 'x</span>' +
+            '<span class="scr-vol">Range: ' + t.range + '%</span>' +
             '<span class="scr-vol">Vol: ' + fmtVol(t.volume) + '</span>' +
+            (t.relVol ? '<span style="color:' + (t.relVol >= 2 ? '#fbbf24' : 'var(--t3)') + '">RVol: ' + t.relVol + 'x</span>' : '') +
+            (t.isVolHigh ? '<span style="color:#fbbf24;font-weight:700">' + t.volDays + 'D VOL HIGH</span>' : '') +
           '</div>' +
           '<div style="font-family:JetBrains Mono,monospace;font-size:.5rem;color:var(--t3);margin-bottom:.3rem;display:flex;flex-wrap:wrap;gap:.4rem">' +
-            (t.sector ? '<span>' + t.sector + '</span>' : '') +
-            (t.mcap ? '<span>' + fmtMcap(t.mcap) + '</span>' : '') +
-            (t.pe ? '<span>PE: ' + t.pe.toFixed(1) + '</span>' : '') +
-            (t.eps ? '<span>EPS: $' + t.eps.toFixed(2) + '</span>' : '') +
-            (t.from52H != null ? '<span style="color:' + (Math.abs(t.from52H) < 5 ? 'var(--grn2)' : 'var(--t3)') + '">52wH: ' + t.from52H + '%</span>' : '') +
+            '<span>O: ' + t.open.toFixed(2) + '</span>' +
+            '<span>H: ' + t.high.toFixed(2) + '</span>' +
+            '<span>L: ' + t.low.toFixed(2) + '</span>' +
+            (t.fromOpen != null ? '<span>From Open: ' + (t.fromOpen >= 0 ? '+' : '') + t.fromOpen + '%</span>' : '') +
+            (t.avgVol ? '<span>Avg Vol: ' + fmtVol(t.avgVol) + '</span>' : '') +
           '</div>' +
           '<canvas id="candle-' + i + '" class="scr-canvas"></canvas>' +
         '</div>';

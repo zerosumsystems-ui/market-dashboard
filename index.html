@@ -109,7 +109,7 @@ canvas{width:100%!important;height:140px!important}
 <div class="orb a"></div><div class="orb b"></div>
 <div class="topbar">
   <div class="brand">MKT COMMAND</div>
-  <div class="topbar-r"><div class="live-dot"></div><span id="clock">FMP</span>
+  <div class="topbar-r"><div class="live-dot"></div><span id="clock">--:--:-- ET</span>
   <button class="btn" id="refBtn" onclick="refreshAll()">REFRESH</button></div>
 </div>
 <div class="tabs">
@@ -161,117 +161,35 @@ canvas{width:100%!important;height:140px!important}
   <div class="sec"><h2>Stock Screener</h2><div class="line"></div><button class="btn" id="scrFilterToggle">HIDE FILTERS</button></div>
   <div class="scr-filters" id="scrFilterPanel">
     <div class="scr-filters-grid">
-      <div class="scr-fg"><label>Name / Ticker</label><input type="text" id="fName" value="" placeholder="e.g. AAPL or Apple"></div>
-      <div class="scr-fg"><label>Sector</label><select id="fSector">
-        <option value="">All Sectors</option>
-        <option value="Technology">Technology</option>
-        <option value="Healthcare">Healthcare</option>
-        <option value="Financial Services">Financial Services</option>
-        <option value="Consumer Cyclical">Consumer Cyclical</option>
-        <option value="Consumer Defensive">Consumer Defensive</option>
-        <option value="Energy">Energy</option>
-        <option value="Industrials">Industrials</option>
-        <option value="Basic Materials">Basic Materials</option>
-        <option value="Communication Services">Communication Services</option>
-        <option value="Real Estate">Real Estate</option>
-        <option value="Utilities">Utilities</option>
-      </select></div>
-      <div class="scr-fg"><label>Industry</label><input type="text" id="fIndustry" value="" placeholder="e.g. Software"></div>
-      <div class="scr-fg"><label>Exchange</label><select id="fExchange">
-        <option value="">All US Exchanges</option>
-        <option value="NYSE">NYSE</option>
-        <option value="NASDAQ">NASDAQ</option>
-        <option value="AMEX">AMEX</option>
-      </select></div>
-      <div class="scr-fg"><label>Country</label><select id="fCountry">
-        <option value="">Any Country</option>
-        <option value="US" selected>United States</option>
-        <option value="CA">Canada</option>
-        <option value="GB">United Kingdom</option>
-        <option value="CN">China</option>
-        <option value="JP">Japan</option>
-        <option value="DE">Germany</option>
-        <option value="FR">France</option>
-        <option value="BR">Brazil</option>
-        <option value="IN">India</option>
-        <option value="HK">Hong Kong</option>
-      </select></div>
-      <div class="scr-fg"><label>Min Market Cap</label><select id="fMinMcap">
-        <option value="">Any</option>
-        <option value="10000000">$10M+ (Nano)</option>
-        <option value="50000000">$50M+ (Micro)</option>
-        <option value="300000000">$300M+ (Small)</option>
-        <option value="2000000000">$2B+ (Mid)</option>
-        <option value="10000000000">$10B+ (Large)</option>
-        <option value="200000000000">$200B+ (Mega)</option>
-      </select></div>
-      <div class="scr-fg"><label>Max Market Cap</label><select id="fMaxMcap">
-        <option value="">Any</option>
-        <option value="50000000">Up to $50M</option>
-        <option value="300000000">Up to $300M</option>
-        <option value="2000000000">Up to $2B</option>
-        <option value="10000000000">Up to $10B</option>
-        <option value="200000000000">Up to $200B</option>
-      </select></div>
+      <div class="scr-fg"><label>Ticker</label><input type="text" id="fName" value="" placeholder="e.g. AAPL"></div>
       <div class="scr-fg"><label>Min Price ($)</label><input type="number" id="fMinPrice" value="2" placeholder="2"></div>
       <div class="scr-fg"><label>Max Price ($)</label><input type="number" id="fMaxPrice" value="" placeholder="Any"></div>
       <div class="scr-fg"><label>Min Volume</label><input type="number" id="fMinVol" value="50000" placeholder="50000"></div>
       <div class="scr-fg"><label>Max Volume</label><input type="number" id="fMaxVol" value="" placeholder="Any"></div>
-      <div class="scr-fg"><label>Min Avg Volume</label><input type="number" id="fMinAvgVol" value="" placeholder="Any"></div>
-      <div class="scr-fg"><label>Max Avg Volume</label><input type="number" id="fMaxAvgVol" value="" placeholder="Any"></div>
-      <div class="scr-fg"><label>Min Beta</label><input type="number" id="fMinBeta" value="" placeholder="Any" step="0.1"></div>
-      <div class="scr-fg"><label>Max Beta</label><input type="number" id="fMaxBeta" value="" placeholder="Any" step="0.1"></div>
-      <div class="scr-fg"><label>Min Dividend ($)</label><input type="number" id="fMinDiv" value="" placeholder="Any" step="0.01"></div>
-      <div class="scr-fg"><label>Max Dividend ($)</label><input type="number" id="fMaxDiv" value="" placeholder="Any" step="0.01"></div>
-      <div class="scr-fg"><label>Min P/E Ratio</label><input type="number" id="fMinPE" value="" placeholder="Any" step="0.1"></div>
-      <div class="scr-fg"><label>Max P/E Ratio</label><input type="number" id="fMaxPE" value="" placeholder="Any" step="0.1"></div>
-      <div class="scr-fg"><label>Min EPS ($)</label><input type="number" id="fMinEPS" value="" placeholder="Any" step="0.01"></div>
-      <div class="scr-fg"><label>Max EPS ($)</label><input type="number" id="fMaxEPS" value="" placeholder="Any" step="0.01"></div>
       <div class="scr-fg"><label>Min % Change</label><input type="number" id="fMinChg" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Max % Change</label><input type="number" id="fMaxChg" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Min Gap %</label><input type="number" id="fMinGap" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Max Gap %</label><input type="number" id="fMaxGap" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Min Range %</label><input type="number" id="fMinRange" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Max Range %</label><input type="number" id="fMaxRange" value="" placeholder="Any" step="0.1"></div>
-      <div class="scr-fg"><label>Min Rel Volume (x)</label><input type="number" id="fMinRelVol" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Min Open ($)</label><input type="number" id="fMinOpen" value="" placeholder="Any"></div>
       <div class="scr-fg"><label>Max Open ($)</label><input type="number" id="fMaxOpen" value="" placeholder="Any"></div>
       <div class="scr-fg"><label>Min From Open %</label><input type="number" id="fMinFromOpen" value="" placeholder="Any" step="0.1"></div>
       <div class="scr-fg"><label>Max From Open %</label><input type="number" id="fMaxFromOpen" value="" placeholder="Any" step="0.1"></div>
-      <div class="scr-fg"><label>Max % From 52w High</label><input type="number" id="fMaxFrom52H" value="" placeholder="e.g. 5" step="0.1" title="Within X% of 52-week high"></div>
-      <div class="scr-fg"><label>Min % From 52w Low</label><input type="number" id="fMinFrom52L" value="" placeholder="e.g. 10" step="0.1" title="At least X% above 52-week low"></div>
-      <div class="scr-fg"><label>Price vs 50d MA</label><select id="fVs50MA">
-        <option value="">Any</option>
-        <option value="above">Above 50d MA</option>
-        <option value="below">Below 50d MA</option>
-      </select></div>
-      <div class="scr-fg"><label>Price vs 200d MA</label><select id="fVs200MA">
-        <option value="">Any</option>
-        <option value="above">Above 200d MA</option>
-        <option value="below">Below 200d MA</option>
-      </select></div>
-      <div class="scr-fg"><label>Include</label><select id="fType">
-        <option value="stocks">Stocks Only</option>
-        <option value="etfs">ETFs Only</option>
-        <option value="all">Stocks + ETFs</option>
-      </select></div>
+      <div class="scr-fg"><label>Min Rel Volume</label><input type="number" id="fMinRelVol" value="" placeholder="e.g. 2" step="0.1"></div>
+      <div class="scr-fg"><label>Max Rel Volume</label><input type="number" id="fMaxRelVol" value="" placeholder="Any" step="0.1"></div>
+      <div class="scr-fg"><label>Min Avg Volume</label><input type="number" id="fMinAvgVol" value="" placeholder="Any"></div>
+      <div class="scr-fg"><label>Period Vol High</label><select id="fVolHigh"><option value="">Any</option><option value="1">Only Vol Highs</option></select></div>
       <div class="scr-fg"><label>Sort By</label><select id="fSort">
         <option value="changeDesc">% Change (High-Low)</option>
         <option value="changeAsc">% Change (Low-High)</option>
         <option value="volumeDesc">Volume (High-Low)</option>
         <option value="volumeAsc">Volume (Low-High)</option>
+        <option value="relVolDesc">Rel Volume (High-Low)</option>
         <option value="priceDesc">Price (High-Low)</option>
         <option value="priceAsc">Price (Low-High)</option>
         <option value="gapDesc">Gap % (High-Low)</option>
         <option value="rangeDesc">Range % (High-Low)</option>
-        <option value="relVolDesc">Rel Volume (High-Low)</option>
-        <option value="mcapDesc">Market Cap (High-Low)</option>
-        <option value="mcapAsc">Market Cap (Low-High)</option>
-        <option value="peAsc">P/E Ratio (Low-High)</option>
-        <option value="peDesc">P/E Ratio (High-Low)</option>
-        <option value="epsDesc">EPS (High-Low)</option>
-        <option value="near52High">Nearest 52w High</option>
-        <option value="near52Low">Nearest 52w Low</option>
       </select></div>
     </div>
     <div class="scr-actions">
@@ -283,7 +201,7 @@ canvas{width:100%!important;height:140px!important}
   <div class="scr-grid" id="scrGrid"><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div><div class="shimmer" style="min-height:220px"></div></div>
 </div>
 
-<div class="footer">Market data powered by Financial Modeling Prep · Built by ZeroSumSystems · Not financial advice</div>
+<div class="footer">Market data powered by Databento · Built by ZeroSumSystems · Not financial advice</div>
 
 <script src="/screener.js"></script>
 <script>
@@ -355,9 +273,6 @@ async function loadBreadth() {
     document.getElementById('distLeg').innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:.8rem;font-family:JetBrains Mono,monospace;font-size:.56rem;color:var(--t3)">' + vl.map(function(v,i) {
       return '<span style="display:flex;align-items:center;gap:.3rem"><span style="width:10px;height:10px;border-radius:2px;background:'+co[i]+'"></span>'+lb[i]+': '+v+'</span>';
     }).join('') + '</div>';
-    // Save today's snapshot to localStorage for historical tracking
-    saveBreadthSnapshot(d);
-    loadBreadthHistory();
   } catch(e) {
     var m = '<div class="err">' + e.message + '</div>';
     document.getElementById('bStats').innerHTML = m;
@@ -417,43 +332,29 @@ async function loadCharts() {
   }
 }
 
-// BREADTH HISTORY (stored in browser localStorage)
+// BREADTH HISTORY (server-computed from Databento)
 function u4C(v){return v>=400?'hsg':v>=250?'hg':''} function d4C(v){return v>=400?'hsr':v>=300?'hr':v>=200?'hy':''}
 function rC(v){return v>=2?'bull':v>=1?'neut':'bear'} function rB(v){return v>=2?'hsg':v>=1.5?'hg':v>=1?'':v>=.7?'hy':'hsr'}
 
-function saveBreadthSnapshot(data) {
-  if (!data || !data.universe || data.universe < 50) return;
+async function loadBreadthHistory() {
+  var tbl = document.getElementById('seedTbl');
+  tbl.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:2rem"><div class="shimmer" style="display:inline-block;width:300px;min-height:20px"></div></td></tr>';
   try {
-    var history = JSON.parse(localStorage.getItem('breadth_history') || '[]');
-    var today = data.date || new Date().toLocaleDateString('en-CA', {timeZone:'America/New_York'});
-    var todayLabel = data.dateLabel || new Date().toLocaleDateString('en-US', {timeZone:'America/New_York'});
-    var snapshot = {
-      date: today, dateLabel: todayLabel,
-      universe: data.universe, u4: data.u4, d4: data.d4, u8: data.u8, d8: data.d8,
-      r4: data.r4, r8: data.r8, adv: data.adv, dec: data.dec
-    };
-    history = history.filter(function(h) { return h.date !== today; });
-    history.unshift(snapshot);
-    history = history.slice(0, 30);
-    localStorage.setItem('breadth_history', JSON.stringify(history));
-  } catch(e) {}
-}
-
-function loadBreadthHistory() {
-  try {
-    var history = JSON.parse(localStorage.getItem('breadth_history') || '[]');
+    var r = await fetch('/api/breadth-history?days=20');
+    var history = await r.json();
+    if (history.error) throw new Error(history.error);
     if (!history.length) {
-      document.getElementById('seedTbl').innerHTML = '<tr><td colspan="12" style="text-align:center;color:var(--t3);padding:2rem">No historical data yet. Data saves automatically each time you visit the dashboard.</td></tr>';
+      tbl.innerHTML = '<tr><td colspan="12" style="text-align:center;color:var(--t3);padding:2rem">No historical breadth data available</td></tr>';
       return;
     }
-    var days = history.slice(0, 20).map(function(day, i) {
+    var days = history.map(function(day, i) {
       var s5 = history.slice(i, i + 5);
       var r5 = s5.length >= 5 ? +(s5.reduce(function(sum, d) { return sum + d.r4; }, 0) / 5).toFixed(2) : null;
       var s10 = history.slice(i, i + 10);
       var r10 = s10.length >= 10 ? +(s10.reduce(function(sum, d) { return sum + d.r4; }, 0) / 10).toFixed(2) : null;
       return Object.assign({}, day, {r5: r5, r10: r10});
     });
-    document.getElementById('seedTbl').innerHTML = days.map(function(r) {
+    tbl.innerHTML = days.map(function(r) {
       return '<tr><td>'+r.dateLabel+'</td>' +
         '<td class="'+u4C(r.u4)+'">'+r.u4+'</td>' +
         '<td class="'+d4C(r.d4)+'">'+r.d4+'</td>' +
@@ -468,18 +369,17 @@ function loadBreadthHistory() {
         '<td style="color:var(--t3)">'+r.universe.toLocaleString()+'</td></tr>';
     }).join('');
   } catch(e) {
-    document.getElementById('seedTbl').innerHTML = '<tr><td colspan="12"><div class="err">'+e.message+'</div></td></tr>';
+    tbl.innerHTML = '<tr><td colspan="12"><div class="err">'+e.message+'</div></td></tr>';
   }
 }
 
 // INIT
 SCREENER.init();
-loadBreadthHistory(); // Show saved history immediately
 
 async function refreshAll() {
   var b = document.getElementById('refBtn');
   b.classList.add('ld'); b.textContent = 'LOADING...';
-  await Promise.allSettled([loadIdx(), loadBreadth(), loadMovers(), loadCharts()]);
+  await Promise.allSettled([loadIdx(), loadBreadth(), loadMovers(), loadCharts(), loadBreadthHistory()]);
   b.classList.remove('ld'); b.textContent = 'REFRESH';
 }
 refreshAll();
