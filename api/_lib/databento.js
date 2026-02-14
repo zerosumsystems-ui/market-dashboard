@@ -39,37 +39,22 @@ export function tsDate(ns) {
   return new Date(Math.floor(Number(ns) / 1e6)).toISOString().slice(0, 10);
 }
 
-// Parse NDJSON response, extract symbol mappings and data records
-function parseNDJSON(text) {
-  const lines = text.trim().split('\n').filter(Boolean);
-  const symbolMap = {};
+// Parse CSV response into array of row objects
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',');
   const records = [];
-  for (const line of lines) {
-    try {
-      const obj = JSON.parse(line);
-      // Metadata object: extract instrument_id → raw_symbol from mappings
-      if (obj.mappings && Array.isArray(obj.mappings)) {
-        for (const m of obj.mappings) {
-          for (const interval of m.intervals || []) {
-            if (interval.symbol && m.raw_symbol) {
-              symbolMap[interval.symbol] = m.raw_symbol;
-            }
-          }
-        }
-        continue;
-      }
-      const rtype = obj.hd?.rtype;
-      if (rtype === 20) {
-        // SymbolMappingMsg
-        const sym = obj.stype_in_symbol || '';
-        if (sym) symbolMap[obj.hd.instrument_id] = sym;
-      } else if (rtype !== 19 && rtype !== 21 && rtype !== 22) {
-        // Data record (skip InstrumentDef=19, Error=21, System=22)
-        records.push(obj);
-      }
-    } catch {}
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',');
+    if (values.length !== headers.length) continue;
+    const row = {};
+    for (let j = 0; j < headers.length; j++) {
+      row[headers[j]] = values[j];
+    }
+    records.push(row);
   }
-  return { symbolMap, records };
+  return records;
 }
 
 // Fetch OHLCV or other schema data from Databento Historical API
@@ -89,7 +74,7 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
     symbols: Array.isArray(symbols) ? symbols.join(',') : symbols,
     start,
     end: clampedEnd,
-    encoding: 'json',
+    encoding: 'csv',
     stype_in: 'raw_symbol',
     stype_out: 'instrument_id',
   });
@@ -108,13 +93,44 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
     throw new Error(`Databento ${r.status}: ${t}`);
   }
 
-  const { symbolMap, records } = parseNDJSON(await r.text());
+  const text = await r.text();
+  if (!text.trim()) {
+    throw new Error('Databento returned empty response');
+  }
 
-  const result = records.map(rec => ({
-    ...rec,
-    symbol: symbolMap[rec.hd?.instrument_id] || symbolMap[rec.symbol] || '',
-    date: tsDate(rec.hd?.ts_event),
-  }));
+  const rows = parseCSV(text);
+
+  if (rows.length === 0) {
+    throw new Error(`No CSV data rows. Headers: ${text.split('\n')[0]}`);
+  }
+
+  // Detect format: if open > 1e8, values are fixed-point; otherwise pretty (dollars)
+  const sampleOpen = Number(rows[0].open);
+  const isPretty = sampleOpen < 1e8;
+
+  const result = rows.map(row => {
+    // Convert prices: if pretty (dollars), multiply to fixed-point for px() compat
+    const open = isPretty ? Math.round(Number(row.open) * 1e9) : Number(row.open);
+    const high = isPretty ? Math.round(Number(row.high) * 1e9) : Number(row.high);
+    const low = isPretty ? Math.round(Number(row.low) * 1e9) : Number(row.low);
+    const close = isPretty ? Math.round(Number(row.close) * 1e9) : Number(row.close);
+
+    // Convert timestamp: if ISO string, convert to nanoseconds
+    let tsEvent = row.ts_event;
+    if (tsEvent && isNaN(Number(tsEvent))) {
+      tsEvent = String(new Date(tsEvent).getTime() * 1e6);
+    }
+
+    return {
+      hd: { ts_event: tsEvent, instrument_id: row.instrument_id },
+      open, high, low, close,
+      volume: Number(row.volume) || 0,
+      symbol: row.symbol || '',
+      date: tsEvent && isNaN(Number(row.ts_event))
+        ? row.ts_event.slice(0, 10)
+        : tsDate(tsEvent),
+    };
+  });
 
   cacheSet(key, result);
   return result;
