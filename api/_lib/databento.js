@@ -50,7 +50,7 @@ function parseNDJSON(text) {
       const rtype = obj.hd?.rtype;
       if (rtype === 20) {
         // SymbolMappingMsg
-        const sym = obj.stype_out_symbol || '';
+        const sym = obj.stype_in_symbol || '';
         if (sym) symbolMap[obj.hd.instrument_id] = sym;
       } else if (rtype !== 19 && rtype !== 21 && rtype !== 22) {
         // Data record (skip InstrumentDef=19, Error=21, System=22)
@@ -76,7 +76,7 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
     end,
     encoding: 'json',
     stype_in: 'raw_symbol',
-    stype_out: 'raw_symbol',
+    stype_out: 'instrument_id',
   });
 
   const r = await fetch(`${HIST_BASE}/timeseries.get_range`, {
