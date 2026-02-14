@@ -47,6 +47,17 @@ function parseNDJSON(text) {
   for (const line of lines) {
     try {
       const obj = JSON.parse(line);
+      // Metadata object: extract instrument_id → raw_symbol from mappings
+      if (obj.mappings && Array.isArray(obj.mappings)) {
+        for (const m of obj.mappings) {
+          for (const interval of m.intervals || []) {
+            if (interval.symbol && m.raw_symbol) {
+              symbolMap[interval.symbol] = m.raw_symbol;
+            }
+          }
+        }
+        continue;
+      }
       const rtype = obj.hd?.rtype;
       if (rtype === 20) {
         // SymbolMappingMsg
@@ -101,7 +112,7 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
 
   const result = records.map(rec => ({
     ...rec,
-    symbol: symbolMap[rec.hd?.instrument_id] || '',
+    symbol: symbolMap[rec.hd?.instrument_id] || symbolMap[rec.symbol] || '',
     date: tsDate(rec.hd?.ts_event),
   }));
 
