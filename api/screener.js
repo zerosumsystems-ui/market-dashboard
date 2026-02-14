@@ -100,6 +100,7 @@ export default async function handler(req, res) {
       };
     });
 
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
     res.json({ count: selected.length, total, tickers: selected });
   } catch (e) { res.status(500).json({ error: e.message }); }
 }

@@ -14,6 +14,7 @@ export default async function handler(req, res) {
     });
 
     records.sort((a, b) => (a.hd.ts_event > b.hd.ts_event ? 1 : -1));
+    res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=600');
     res.json({ ticker: tk, results: records.map(r => ({ date: r.date, close: px(r.close) })) });
   } catch (e) { res.status(500).json({ error: e.message }); }
 }

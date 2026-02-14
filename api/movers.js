@@ -23,6 +23,7 @@ export default async function handler(req, res) {
       volume: q.volume,
     }));
 
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
     res.json(top);
   } catch (e) { res.status(500).json({ error: e.message }); }
 }

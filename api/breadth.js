@@ -28,6 +28,7 @@ export default async function handler(req, res) {
     const dateLabel = new Date().toLocaleDateString('en-US', etOpts);
     const isoDate = new Date().toLocaleDateString('en-CA', etOpts);
 
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
     res.json({
       date: isoDate, dateLabel,
       universe: tot, u4, d4, u8, d8,

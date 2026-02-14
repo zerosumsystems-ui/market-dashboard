@@ -1,1 +1,11 @@
-{}
+{
+  "functions": {
+    "api/indices.js": { "maxDuration": 30 },
+    "api/breadth.js": { "maxDuration": 60 },
+    "api/breadth-history.js": { "maxDuration": 60 },
+    "api/movers.js": { "maxDuration": 60 },
+    "api/screener.js": { "maxDuration": 60 },
+    "api/aggs.js": { "maxDuration": 30 },
+    "api/candles.js": { "maxDuration": 30 }
+  }
+}

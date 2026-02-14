@@ -2,7 +2,29 @@ const API_KEY = process.env.DATABENTO_API_KEY;
 const HIST_BASE = "https://hist.databento.com/v0";
 const DATASET = "DBEQ.BASIC";
 
+// In-memory cache (survives warm starts, ~2 min TTL)
+const _cache = new Map();
+const CACHE_TTL = 2 * 60 * 1000;
+
+function cacheKey(params) {
+  return JSON.stringify(params);
+}
+
+function cacheGet(key) {
+  const entry = _cache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.ts > CACHE_TTL) { _cache.delete(key); return null; }
+  return entry.data;
+}
+
+function cacheSet(key, data) {
+  // Limit cache size to prevent memory leaks
+  if (_cache.size > 20) _cache.clear();
+  _cache.set(key, { data, ts: Date.now() });
+}
+
 function authHeader() {
+  if (!API_KEY) throw new Error('DATABENTO_API_KEY is not configured');
   return 'Basic ' + Buffer.from(API_KEY + ':').toString('base64');
 }
 
@@ -41,8 +63,13 @@ function parseNDJSON(text) {
 
 // Fetch OHLCV or other schema data from Databento Historical API
 export async function getRange({ schema, symbols, start, end, dataset }) {
+  const params = { schema, symbols, start, end, dataset: dataset || DATASET };
+  const key = cacheKey(params);
+  const cached = cacheGet(key);
+  if (cached) return cached;
+
   const body = new URLSearchParams({
-    dataset: dataset || DATASET,
+    dataset: params.dataset,
     schema,
     symbols: Array.isArray(symbols) ? symbols.join(',') : symbols,
     start,
@@ -68,9 +95,12 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
 
   const { symbolMap, records } = parseNDJSON(await r.text());
 
-  return records.map(rec => ({
+  const result = records.map(rec => ({
     ...rec,
     symbol: symbolMap[rec.hd?.instrument_id] || '',
     date: tsDate(rec.hd?.ts_event),
   }));
+
+  cacheSet(key, result);
+  return result;
 }

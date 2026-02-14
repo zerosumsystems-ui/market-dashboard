@@ -41,6 +41,7 @@ export default async function handler(req, res) {
       };
     }).filter(Boolean);
 
+    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
     res.json(quotes);
   } catch (e) { res.status(500).json({ error: e.message }); }
 }
