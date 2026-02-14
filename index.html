@@ -268,9 +268,6 @@ async function loadBreadth() {
     document.getElementById('distLeg').innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:.8rem;font-family:JetBrains Mono,monospace;font-size:.56rem;color:var(--t3)">' + vl.map(function(v,i) {
       return '<span style="display:flex;align-items:center;gap:.3rem"><span style="width:10px;height:10px;border-radius:2px;background:'+co[i]+'"></span>'+lb[i]+': '+v+'</span>';
     }).join('') + '</div>';
-    // Save today's snapshot to localStorage for historical tracking
-    saveBreadthSnapshot(d);
-    loadBreadthHistory();
   } catch(e) {
     var m = '<div class="err">' + e.message + '</div>';
     document.getElementById('bStats').innerHTML = m;
@@ -330,43 +327,29 @@ async function loadCharts() {
   }
 }
 
-// BREADTH HISTORY (stored in browser localStorage)
+// BREADTH HISTORY (server-computed from Databento)
 function u4C(v){return v>=400?'hsg':v>=250?'hg':''} function d4C(v){return v>=400?'hsr':v>=300?'hr':v>=200?'hy':''}
 function rC(v){return v>=2?'bull':v>=1?'neut':'bear'} function rB(v){return v>=2?'hsg':v>=1.5?'hg':v>=1?'':v>=.7?'hy':'hsr'}
 
-function saveBreadthSnapshot(data) {
-  if (!data || !data.universe || data.universe < 50) return;
+async function loadBreadthHistory() {
+  var tbl = document.getElementById('seedTbl');
+  tbl.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:2rem"><div class="shimmer" style="display:inline-block;width:300px;min-height:20px"></div></td></tr>';
   try {
-    var history = JSON.parse(localStorage.getItem('breadth_history') || '[]');
-    var today = data.date || new Date().toLocaleDateString('en-CA', {timeZone:'America/New_York'});
-    var todayLabel = data.dateLabel || new Date().toLocaleDateString('en-US', {timeZone:'America/New_York'});
-    var snapshot = {
-      date: today, dateLabel: todayLabel,
-      universe: data.universe, u4: data.u4, d4: data.d4, u8: data.u8, d8: data.d8,
-      r4: data.r4, r8: data.r8, adv: data.adv, dec: data.dec
-    };
-    history = history.filter(function(h) { return h.date !== today; });
-    history.unshift(snapshot);
-    history = history.slice(0, 30);
-    localStorage.setItem('breadth_history', JSON.stringify(history));
-  } catch(e) {}
-}
-
-function loadBreadthHistory() {
-  try {
-    var history = JSON.parse(localStorage.getItem('breadth_history') || '[]');
+    var r = await fetch('/api/breadth-history?days=20');
+    var history = await r.json();
+    if (history.error) throw new Error(history.error);
     if (!history.length) {
-      document.getElementById('seedTbl').innerHTML = '<tr><td colspan="12" style="text-align:center;color:var(--t3);padding:2rem">No historical data yet. Data saves automatically each time you visit the dashboard.</td></tr>';
+      tbl.innerHTML = '<tr><td colspan="12" style="text-align:center;color:var(--t3);padding:2rem">No historical breadth data available</td></tr>';
       return;
     }
-    var days = history.slice(0, 20).map(function(day, i) {
+    var days = history.map(function(day, i) {
       var s5 = history.slice(i, i + 5);
       var r5 = s5.length >= 5 ? +(s5.reduce(function(sum, d) { return sum + d.r4; }, 0) / 5).toFixed(2) : null;
       var s10 = history.slice(i, i + 10);
       var r10 = s10.length >= 10 ? +(s10.reduce(function(sum, d) { return sum + d.r4; }, 0) / 10).toFixed(2) : null;
       return Object.assign({}, day, {r5: r5, r10: r10});
     });
-    document.getElementById('seedTbl').innerHTML = days.map(function(r) {
+    tbl.innerHTML = days.map(function(r) {
       return '<tr><td>'+r.dateLabel+'</td>' +
         '<td class="'+u4C(r.u4)+'">'+r.u4+'</td>' +
         '<td class="'+d4C(r.d4)+'">'+r.d4+'</td>' +
@@ -381,18 +364,17 @@ function loadBreadthHistory() {
         '<td style="color:var(--t3)">'+r.universe.toLocaleString()+'</td></tr>';
     }).join('');
   } catch(e) {
-    document.getElementById('seedTbl').innerHTML = '<tr><td colspan="12"><div class="err">'+e.message+'</div></td></tr>';
+    tbl.innerHTML = '<tr><td colspan="12"><div class="err">'+e.message+'</div></td></tr>';
   }
 }
 
 // INIT
 SCREENER.init();
-loadBreadthHistory(); // Show saved history immediately
 
 async function refreshAll() {
   var b = document.getElementById('refBtn');
   b.classList.add('ld'); b.textContent = 'LOADING...';
-  await Promise.allSettled([loadIdx(), loadBreadth(), loadMovers(), loadCharts()]);
+  await Promise.allSettled([loadIdx(), loadBreadth(), loadMovers(), loadCharts(), loadBreadthHistory()]);
   b.classList.remove('ld'); b.textContent = 'REFRESH';
 }
 refreshAll();
