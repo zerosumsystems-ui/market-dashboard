@@ -63,7 +63,11 @@ function parseNDJSON(text) {
 
 // Fetch OHLCV or other schema data from Databento Historical API
 export async function getRange({ schema, symbols, start, end, dataset }) {
-  const params = { schema, symbols, start, end, dataset: dataset || DATASET };
+  // Databento Historical data is T+1; clamp end to today so we don't overshoot
+  const today = new Date().toISOString().slice(0, 10);
+  const clampedEnd = end > today ? today : end;
+
+  const params = { schema, symbols, start, end: clampedEnd, dataset: dataset || DATASET };
   const key = cacheKey(params);
   const cached = cacheGet(key);
   if (cached) return cached;
@@ -73,7 +77,7 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
     schema,
     symbols: Array.isArray(symbols) ? symbols.join(',') : symbols,
     start,
-    end,
+    end: clampedEnd,
     encoding: 'json',
     stype_in: 'raw_symbol',
     stype_out: 'instrument_id',
