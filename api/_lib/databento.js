@@ -57,42 +57,13 @@ function parseCSV(text) {
   return records;
 }
 
-// Parse NDJSON response — extract symbol mappings from metadata + data records
-function parseNDJSON(text) {
-  const lines = text.trim().split('\n').filter(Boolean);
-  const symbolMap = {};
-  const records = [];
-  for (const line of lines) {
-    try {
-      const obj = JSON.parse(line);
-      // Metadata object: extract instrument_id → raw_symbol from mappings
-      if (obj.mappings && Array.isArray(obj.mappings)) {
-        for (const m of obj.mappings) {
-          for (const interval of m.intervals || []) {
-            if (interval.symbol != null && m.raw_symbol) {
-              symbolMap[String(interval.symbol)] = m.raw_symbol;
-            }
-          }
-        }
-        continue;
-      }
-      // Skip non-data records (SymbolMapping=20, InstrumentDef=19, Error=21, System=22)
-      const rtype = obj.hd?.rtype ?? obj.rtype;
-      if (rtype === 19 || rtype === 20 || rtype === 21 || rtype === 22) continue;
-      // Push any line that has OHLCV data fields
-      if (rtype != null || obj.open != null) records.push(obj);
-    } catch {}
-  }
-  return { symbolMap, records };
-}
-
-// Resolve raw_symbol → instrument_id via Databento symbology API
-async function resolveSymbols({ dataset, symbols, start, end }) {
+// Resolve symbols via Databento symbology API
+async function resolveSymbols({ dataset, symbols, start, end, stypeIn, stypeOut }) {
   const body = new URLSearchParams({
     dataset,
     symbols: Array.isArray(symbols) ? symbols.join(',') : symbols,
-    stype_in: 'raw_symbol',
-    stype_out: 'instrument_id',
+    stype_in: stypeIn || 'raw_symbol',
+    stype_out: stypeOut || 'instrument_id',
     start_date: start,
     end_date: end,
   });
@@ -106,42 +77,28 @@ async function resolveSymbols({ dataset, symbols, start, end }) {
   });
   if (!r.ok) return {};
   const data = await r.json();
-  const idToSymbol = {};
+  const mapping = {};
   for (const [sym, mappings] of Object.entries(data.result || {})) {
     for (const m of Array.isArray(mappings) ? mappings : []) {
-      if (m.s != null) idToSymbol[String(m.s)] = sym;
+      if (m.s != null) mapping[String(m.s)] = sym;
     }
   }
-  return idToSymbol;
+  return mapping;
 }
 
-// Build a normalized record from either CSV row or JSON object
-function buildRecord(row, sym, isPretty, isJson) {
-  let open, high, low, close, volume, tsEvent, instrumentId;
-
-  if (isJson) {
-    open = Number(row.open);
-    high = Number(row.high);
-    low = Number(row.low);
-    close = Number(row.close);
-    volume = Number(row.volume) || 0;
-    tsEvent = String(row.hd?.ts_event ?? row.ts_event);
-    instrumentId = String(row.hd?.instrument_id ?? row.instrument_id);
-  } else {
-    open = isPretty ? Math.round(Number(row.open) * 1e9) : Number(row.open);
-    high = isPretty ? Math.round(Number(row.high) * 1e9) : Number(row.high);
-    low = isPretty ? Math.round(Number(row.low) * 1e9) : Number(row.low);
-    close = isPretty ? Math.round(Number(row.close) * 1e9) : Number(row.close);
-    volume = Number(row.volume) || 0;
-    tsEvent = row.ts_event;
-    instrumentId = String(row.instrument_id);
-    if (tsEvent && isNaN(Number(tsEvent))) {
-      tsEvent = String(new Date(tsEvent).getTime() * 1e6);
-    }
+// Build a normalized record from a CSV row
+function buildRecord(row, sym, isPretty) {
+  const open = isPretty ? Math.round(Number(row.open) * 1e9) : Number(row.open);
+  const high = isPretty ? Math.round(Number(row.high) * 1e9) : Number(row.high);
+  const low = isPretty ? Math.round(Number(row.low) * 1e9) : Number(row.low);
+  const close = isPretty ? Math.round(Number(row.close) * 1e9) : Number(row.close);
+  const volume = Number(row.volume) || 0;
+  let tsEvent = row.ts_event;
+  if (tsEvent && isNaN(Number(tsEvent))) {
+    tsEvent = String(new Date(tsEvent).getTime() * 1e6);
   }
-
   return {
-    hd: { ts_event: tsEvent, instrument_id: instrumentId },
+    hd: { ts_event: tsEvent, instrument_id: String(row.instrument_id) },
     open, high, low, close, volume,
     symbol: sym,
     date: tsDate(tsEvent),
@@ -175,11 +132,12 @@ function dedup(allRecords) {
 
 // Fetch OHLCV or other schema data from Databento Historical API
 export async function getRange({ schema, symbols, start, end, dataset }) {
-  // Databento Historical data is T+1; clamp end to yesterday (available_end)
+  // Databento Historical data is T+1; clamp end to yesterday
   const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
   const clampedEnd = end > yesterday ? yesterday : end;
 
-  const params = { schema, symbols, start, end: clampedEnd, dataset: dataset || DATASET };
+  const ds = dataset || DATASET;
+  const params = { schema, symbols, start, end: clampedEnd, dataset: ds };
   const key = cacheKey(params);
   const cached = cacheGet(key);
   if (cached) return cached;
@@ -188,22 +146,19 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
   const isAllSymbols = symbolList.length === 1 && symbolList[0] === 'ALL_SYMBOLS';
   const isSingleKnownSymbol = symbolList.length === 1 && !isAllSymbols;
 
-  // Use JSON for ALL_SYMBOLS (includes symbol mappings inline),
-  // CSV for specific symbols (simpler, proven)
-  const encoding = isAllSymbols ? 'json' : 'csv';
-
+  // Always use CSV encoding (JSON via HTTP API lacks symbol mappings)
   const body = new URLSearchParams({
-    dataset: params.dataset,
+    dataset: ds,
     schema,
     symbols: symbolList.join(','),
     start,
     end: clampedEnd,
-    encoding,
+    encoding: 'csv',
     stype_in: 'raw_symbol',
     stype_out: 'instrument_id',
   });
 
-  // Fetch data (and symbol mapping in parallel for multi-symbol CSV requests)
+  // Fetch CSV data; for known multi-symbol lists, resolve symbols in parallel
   const [r, preResolvedMap] = await Promise.all([
     fetch(`${HIST_BASE}/timeseries.get_range`, {
       method: 'POST',
@@ -213,8 +168,8 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
       },
       body: body.toString(),
     }),
-    !isSingleKnownSymbol && !isAllSymbols && symbolList.length > 1
-      ? resolveSymbols({ dataset: params.dataset, symbols: symbolList, start, end: clampedEnd })
+    !isSingleKnownSymbol && !isAllSymbols
+      ? resolveSymbols({ dataset: ds, symbols: symbolList, start, end: clampedEnd })
       : Promise.resolve(null),
   ]);
 
@@ -228,32 +183,33 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
     throw new Error('Databento returned empty response');
   }
 
-  let allRecords;
+  const rows = parseCSV(text);
+  if (rows.length === 0) {
+    throw new Error(`No CSV data rows. Headers: ${text.split('\n')[0]}`);
+  }
 
+  const sampleOpen = Number(rows[0].open);
+  const isPretty = sampleOpen < 1e8;
+
+  // For ALL_SYMBOLS: collect instrument_ids from CSV, resolve to symbols
+  let idToSymbol = preResolvedMap;
   if (isAllSymbols) {
-    // JSON path: parse NDJSON, extract symbol mappings from metadata
-    const { symbolMap, records } = parseNDJSON(text);
-    allRecords = records.map(rec => {
-      const id = String(rec.hd?.instrument_id);
-      const sym = symbolMap[id] || '';
-      return buildRecord(rec, sym, false, true);
-    });
-  } else {
-    // CSV path: parse rows, resolve symbols
-    const rows = parseCSV(text);
-    if (rows.length === 0) {
-      throw new Error(`No CSV data rows. Headers: ${text.split('\n')[0]}`);
-    }
-    const sampleOpen = Number(rows[0].open);
-    const isPretty = sampleOpen < 1e8;
-    const idToSymbol = preResolvedMap;
-
-    allRecords = rows.map(row => {
-      const id = String(row.instrument_id);
-      const sym = isSingleKnownSymbol ? symbolList[0] : (idToSymbol?.[id] || '');
-      return buildRecord(row, sym, isPretty, false);
+    const uniqueIds = [...new Set(rows.map(r => String(r.instrument_id)))];
+    idToSymbol = await resolveSymbols({
+      dataset: ds,
+      symbols: uniqueIds.join(','),
+      start,
+      end: clampedEnd,
+      stypeIn: 'instrument_id',
+      stypeOut: 'raw_symbol',
     });
   }
+
+  const allRecords = rows.map(row => {
+    const id = String(row.instrument_id);
+    const sym = isSingleKnownSymbol ? symbolList[0] : (idToSymbol?.[id] || '');
+    return buildRecord(row, sym, isPretty);
+  });
 
   const result = dedup(allRecords);
   cacheSet(key, result);
