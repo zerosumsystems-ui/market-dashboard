@@ -57,29 +57,17 @@ function parseCSV(text) {
   return records;
 }
 
-// Fetch OHLCV or other schema data from Databento Historical API
-export async function getRange({ schema, symbols, start, end, dataset }) {
-  // Databento Historical data is T+1; clamp end to today so we don't overshoot
-  const today = new Date().toISOString().slice(0, 10);
-  const clampedEnd = end > today ? today : end;
-
-  const params = { schema, symbols, start, end: clampedEnd, dataset: dataset || DATASET };
-  const key = cacheKey(params);
-  const cached = cacheGet(key);
-  if (cached) return cached;
-
+// Resolve instrument_id → symbol mapping via Databento symbology API
+async function resolveSymbols({ dataset, symbols, start, end }) {
   const body = new URLSearchParams({
-    dataset: params.dataset,
-    schema,
+    dataset,
     symbols: Array.isArray(symbols) ? symbols.join(',') : symbols,
-    start,
-    end: clampedEnd,
-    encoding: 'csv',
     stype_in: 'raw_symbol',
     stype_out: 'instrument_id',
+    start_date: start,
+    end_date: end,
   });
-
-  const r = await fetch(`${HIST_BASE}/timeseries.get_range`, {
+  const r = await fetch(`${HIST_BASE}/symbology.resolve`, {
     method: 'POST',
     headers: {
       'Authorization': authHeader(),
@@ -87,6 +75,55 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
     },
     body: body.toString(),
   });
+  if (!r.ok) return {};
+  const data = await r.json();
+  const idToSymbol = {};
+  for (const [sym, mappings] of Object.entries(data.result || {})) {
+    for (const m of Array.isArray(mappings) ? mappings : []) {
+      if (m.s != null) idToSymbol[String(m.s)] = sym;
+    }
+  }
+  return idToSymbol;
+}
+
+// Fetch OHLCV or other schema data from Databento Historical API
+export async function getRange({ schema, symbols, start, end, dataset }) {
+  // Databento Historical data is T+1; clamp end to yesterday (available_end)
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const clampedEnd = end > yesterday ? yesterday : end;
+
+  const params = { schema, symbols, start, end: clampedEnd, dataset: dataset || DATASET };
+  const key = cacheKey(params);
+  const cached = cacheGet(key);
+  if (cached) return cached;
+
+  const symbolList = Array.isArray(symbols) ? symbols : symbols.split(',');
+
+  const body = new URLSearchParams({
+    dataset: params.dataset,
+    schema,
+    symbols: symbolList.join(','),
+    start,
+    end: clampedEnd,
+    encoding: 'csv',
+    stype_in: 'raw_symbol',
+    stype_out: 'instrument_id',
+  });
+
+  // Fetch data and symbol mapping in parallel
+  const [r, idToSymbol] = await Promise.all([
+    fetch(`${HIST_BASE}/timeseries.get_range`, {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader(),
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body.toString(),
+    }),
+    symbolList.length === 1
+      ? Promise.resolve(null)
+      : resolveSymbols({ dataset: params.dataset, symbols: symbolList, start, end: clampedEnd }),
+  ]);
 
   if (!r.ok) {
     const t = await r.text();
@@ -108,29 +145,42 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
   const sampleOpen = Number(rows[0].open);
   const isPretty = sampleOpen < 1e8;
 
-  const result = rows.map(row => {
-    // Convert prices: if pretty (dollars), multiply to fixed-point for px() compat
+  // Build records with symbol resolution
+  const allRecords = rows.map(row => {
     const open = isPretty ? Math.round(Number(row.open) * 1e9) : Number(row.open);
     const high = isPretty ? Math.round(Number(row.high) * 1e9) : Number(row.high);
     const low = isPretty ? Math.round(Number(row.low) * 1e9) : Number(row.low);
     const close = isPretty ? Math.round(Number(row.close) * 1e9) : Number(row.close);
 
-    // Convert timestamp: if ISO string, convert to nanoseconds
     let tsEvent = row.ts_event;
     if (tsEvent && isNaN(Number(tsEvent))) {
       tsEvent = String(new Date(tsEvent).getTime() * 1e6);
     }
 
+    // Resolve symbol: CSV column → single-symbol shortcut → symbology mapping
+    const id = String(row.instrument_id);
+    const sym = row.symbol || (symbolList.length === 1 ? symbolList[0] : (idToSymbol?.[id] || ''));
+
     return {
-      hd: { ts_event: tsEvent, instrument_id: row.instrument_id },
+      hd: { ts_event: tsEvent, instrument_id: id },
       open, high, low, close,
       volume: Number(row.volume) || 0,
-      symbol: row.symbol || '',
+      symbol: sym,
       date: tsEvent && isNaN(Number(row.ts_event))
         ? row.ts_event.slice(0, 10)
         : tsDate(tsEvent),
     };
   });
+
+  // Deduplicate: DBEQ.BASIC returns multiple publisher rows per day.
+  // Keep the row with the highest volume for each (symbol, date) pair.
+  const best = new Map();
+  for (const rec of allRecords) {
+    const k = `${rec.symbol}|${rec.date}`;
+    const prev = best.get(k);
+    if (!prev || rec.volume > prev.volume) best.set(k, rec);
+  }
+  const result = [...best.values()];
 
   cacheSet(key, result);
   return result;
