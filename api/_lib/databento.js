@@ -88,9 +88,9 @@ async function resolveSymbols({ dataset, symbols, start, end }) {
 
 // Fetch OHLCV or other schema data from Databento Historical API
 export async function getRange({ schema, symbols, start, end, dataset }) {
-  // Databento Historical data is T+1; clamp end to today so we don't overshoot
-  const today = new Date().toISOString().slice(0, 10);
-  const clampedEnd = end > today ? today : end;
+  // Databento Historical data is T+1; clamp end to yesterday (available_end)
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const clampedEnd = end > yesterday ? yesterday : end;
 
   const params = { schema, symbols, start, end: clampedEnd, dataset: dataset || DATASET };
   const key = cacheKey(params);
