@@ -57,7 +57,7 @@ function parseCSV(text) {
   return records;
 }
 
-// Resolve instrument_id → symbol mapping via Databento symbology API
+// Resolve symbols ↔ instrument_ids via Databento symbology API
 async function resolveSymbols({ dataset, symbols, start, end }) {
   const body = new URLSearchParams({
     dataset,
@@ -86,6 +86,35 @@ async function resolveSymbols({ dataset, symbols, start, end }) {
   return idToSymbol;
 }
 
+// Resolve instrument_ids back to raw_symbols (for ALL_SYMBOLS requests)
+async function resolveInstrumentIds({ dataset, ids, start, end }) {
+  const body = new URLSearchParams({
+    dataset,
+    symbols: ids.join(','),
+    stype_in: 'instrument_id',
+    stype_out: 'raw_symbol',
+    start_date: start,
+    end_date: end,
+  });
+  const r = await fetch(`${HIST_BASE}/symbology.resolve`, {
+    method: 'POST',
+    headers: {
+      'Authorization': authHeader(),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: body.toString(),
+  });
+  if (!r.ok) return {};
+  const data = await r.json();
+  const idToSymbol = {};
+  for (const [id, mappings] of Object.entries(data.result || {})) {
+    for (const m of Array.isArray(mappings) ? mappings : []) {
+      if (m.s != null) { idToSymbol[String(id)] = String(m.s); break; }
+    }
+  }
+  return idToSymbol;
+}
+
 // Fetch OHLCV or other schema data from Databento Historical API
 export async function getRange({ schema, symbols, start, end, dataset }) {
   // Databento Historical data is T+1; clamp end to yesterday (available_end)
@@ -98,6 +127,8 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
   if (cached) return cached;
 
   const symbolList = Array.isArray(symbols) ? symbols : symbols.split(',');
+  const isAllSymbols = symbolList.length === 1 && symbolList[0] === 'ALL_SYMBOLS';
+  const isSingleKnownSymbol = symbolList.length === 1 && !isAllSymbols;
 
   const body = new URLSearchParams({
     dataset: params.dataset,
@@ -110,8 +141,8 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
     stype_out: 'instrument_id',
   });
 
-  // Fetch data and symbol mapping in parallel
-  const [r, idToSymbol] = await Promise.all([
+  // Fetch data (and symbol mapping in parallel for multi-symbol requests)
+  const [r, preResolvedMap] = await Promise.all([
     fetch(`${HIST_BASE}/timeseries.get_range`, {
       method: 'POST',
       headers: {
@@ -120,9 +151,9 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
       },
       body: body.toString(),
     }),
-    symbolList.length === 1
-      ? Promise.resolve(null)
-      : resolveSymbols({ dataset: params.dataset, symbols: symbolList, start, end: clampedEnd }),
+    !isSingleKnownSymbol && !isAllSymbols && symbolList.length > 1
+      ? resolveSymbols({ dataset: params.dataset, symbols: symbolList, start, end: clampedEnd })
+      : Promise.resolve(null),
   ]);
 
   if (!r.ok) {
@@ -141,6 +172,15 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
     throw new Error(`No CSV data rows. Headers: ${text.split('\n')[0]}`);
   }
 
+  // For ALL_SYMBOLS: resolve instrument_ids after we have the data
+  let idToSymbol = preResolvedMap;
+  if (isAllSymbols) {
+    const uniqueIds = [...new Set(rows.map(r => r.instrument_id))];
+    idToSymbol = await resolveInstrumentIds({
+      dataset: params.dataset, ids: uniqueIds, start, end: clampedEnd,
+    });
+  }
+
   // Detect format: if open > 1e8, values are fixed-point; otherwise pretty (dollars)
   const sampleOpen = Number(rows[0].open);
   const isPretty = sampleOpen < 1e8;
@@ -157,9 +197,9 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
       tsEvent = String(new Date(tsEvent).getTime() * 1e6);
     }
 
-    // Resolve symbol: CSV column → single-symbol shortcut → symbology mapping
+    // Resolve symbol: single known symbol → symbology mapping
     const id = String(row.instrument_id);
-    const sym = row.symbol || (symbolList.length === 1 ? symbolList[0] : (idToSymbol?.[id] || ''));
+    const sym = isSingleKnownSymbol ? symbolList[0] : (idToSymbol?.[id] || '');
 
     return {
       hd: { ts_event: tsEvent, instrument_id: id },
@@ -173,14 +213,27 @@ export async function getRange({ schema, symbols, start, end, dataset }) {
   });
 
   // Deduplicate: DBEQ.BASIC returns multiple publisher rows per day.
-  // Keep the row with the highest volume for each (symbol, date) pair.
+  // Keep the highest-volume publisher's prices, sum volumes across all publishers.
   const best = new Map();
   for (const rec of allRecords) {
+    if (!rec.symbol) continue;
     const k = `${rec.symbol}|${rec.date}`;
     const prev = best.get(k);
-    if (!prev || rec.volume > prev.volume) best.set(k, rec);
+    if (!prev) {
+      best.set(k, { ...rec, _maxVol: rec.volume });
+    } else {
+      prev.volume += rec.volume;
+      if (rec.volume > prev._maxVol) {
+        prev.open = rec.open;
+        prev.high = rec.high;
+        prev.low = rec.low;
+        prev.close = rec.close;
+        prev._maxVol = rec.volume;
+      }
+    }
   }
   const result = [...best.values()];
+  for (const r of result) delete r._maxVol;
 
   cacheSet(key, result);
   return result;
