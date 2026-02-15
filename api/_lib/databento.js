@@ -77,9 +77,10 @@ function parseNDJSON(text) {
         continue;
       }
       // Skip non-data records (SymbolMapping=20, InstrumentDef=19, Error=21, System=22)
-      const rtype = obj.hd?.rtype;
+      const rtype = obj.hd?.rtype ?? obj.rtype;
       if (rtype === 19 || rtype === 20 || rtype === 21 || rtype === 22) continue;
-      if (rtype != null) records.push(obj);
+      // Push any line that has OHLCV data fields
+      if (rtype != null || obj.open != null) records.push(obj);
     } catch {}
   }
   return { symbolMap, records };
@@ -124,8 +125,8 @@ function buildRecord(row, sym, isPretty, isJson) {
     low = Number(row.low);
     close = Number(row.close);
     volume = Number(row.volume) || 0;
-    tsEvent = String(row.hd?.ts_event);
-    instrumentId = String(row.hd?.instrument_id);
+    tsEvent = String(row.hd?.ts_event ?? row.ts_event);
+    instrumentId = String(row.hd?.instrument_id ?? row.instrument_id);
   } else {
     open = isPretty ? Math.round(Number(row.open) * 1e9) : Number(row.open);
     high = isPretty ? Math.round(Number(row.high) * 1e9) : Number(row.high);
